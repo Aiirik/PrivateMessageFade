@@ -38,12 +38,41 @@ public class PrivateMessageFadePlugin extends Plugin
 	private static final int[] CHAT_TAB_COMPONENT_IDS =
 	{
 		InterfaceID.Chatbox.CHAT_ALL,
+		InterfaceID.Chatbox.CHAT_ALL_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_ALL_TEXT1,
 		InterfaceID.Chatbox.CHAT_GAME,
+		InterfaceID.Chatbox.CHAT_GAME_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_GAME_TEXT1,
+		InterfaceID.Chatbox.CHAT_GAME_FILTER,
 		InterfaceID.Chatbox.CHAT_PUBLIC,
+		InterfaceID.Chatbox.CHAT_PUBLIC_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1,
+		InterfaceID.Chatbox.CHAT_PUBLIC_FILTER,
 		InterfaceID.Chatbox.CHAT_PRIVATE,
+		InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1,
+		InterfaceID.Chatbox.CHAT_PRIVATE_FILTER,
 		InterfaceID.Chatbox.CHAT_FRIENDSCHAT,
+		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1,
+		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_FILTER,
 		InterfaceID.Chatbox.CHAT_CLAN,
+		InterfaceID.Chatbox.CHAT_CLAN_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_CLAN_TEXT1,
+		InterfaceID.Chatbox.CHAT_CLAN_FILTER,
 		InterfaceID.Chatbox.CHAT_TRADE
+		,
+		InterfaceID.Chatbox.CHAT_TRADE_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_TRADE_TEXT,
+		InterfaceID.Chatbox.CHAT_TRADE_FILTER
+	};
+
+	private static final int[] PRIVATE_TAB_COMPONENT_IDS =
+	{
+		InterfaceID.Chatbox.CHAT_PRIVATE,
+		InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1,
+		InterfaceID.Chatbox.CHAT_PRIVATE_FILTER
 	};
 
 	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
@@ -235,7 +264,7 @@ public class PrivateMessageFadePlugin extends Plugin
 			return;
 		}
 
-		privateTabSelected = widgetId == InterfaceID.Chatbox.CHAT_PRIVATE;
+		privateTabSelected = isPrivateTabWidget(widgetId);
 		if (privateTabSelected && config.privateTabClickMarksRead())
 		{
 			clearUnreadMessages();
@@ -441,6 +470,19 @@ public class PrivateMessageFadePlugin extends Plugin
 		for (int chatTabComponentId : CHAT_TAB_COMPONENT_IDS)
 		{
 			if (chatTabComponentId == widgetId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean isPrivateTabWidget(int widgetId)
+	{
+		for (int privateTabComponentId : PRIVATE_TAB_COMPONENT_IDS)
+		{
+			if (privateTabComponentId == widgetId)
 			{
 				return true;
 			}

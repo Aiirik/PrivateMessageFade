@@ -5,18 +5,41 @@ import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
 @ConfigGroup("privatemessagefade")
 public interface PrivateMessageFadeConfig extends Config
 {
+	@ConfigSection(
+		name = "Fade settings",
+		description = "Settings for split private message fading.",
+		position = 0
+	)
+	String fadeSettings = "fadeSettings";
+
+	@ConfigSection(
+		name = "Widget notification",
+		description = "Settings for the RuneLite-style widget notification.",
+		position = 1
+	)
+	String widgetNotificationSection = "widgetNotificationSection";
+
+	@ConfigSection(
+		name = "Private tab notification",
+		description = "Settings for the Private chat tab notification.",
+		position = 2
+	)
+	String privateTabNotificationSection = "privateTabNotificationSection";
+
 	@Range(min = 0, max = 600)
 	@ConfigItem(
 		position = 0,
 		keyName = "fadeDelaySeconds",
 		name = "Fade delay",
-		description = "Seconds of split private chat inactivity before it hides. Set to 0 to disable."
+		description = "Seconds of split private chat inactivity before it hides. Set to 0 to disable.",
+		section = fadeSettings
 	)
 	default int fadeDelaySeconds()
 	{
@@ -27,7 +50,8 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 1,
 		keyName = "enableFadeEffect",
 		name = "Enable fade effect",
-		description = "Gradually fades split private chat instead of hiding it instantly."
+		description = "Gradually fades split private chat instead of hiding it instantly.",
+		section = fadeSettings
 	)
 	default boolean enableFadeEffect()
 	{
@@ -39,7 +63,8 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 2,
 		keyName = "fadeDurationSeconds",
 		name = "Fade duration",
-		description = "How long the fade animation lasts after the idle delay."
+		description = "How long the fade animation lasts after the idle delay.",
+		section = fadeSettings
 	)
 	default int fadeDurationSeconds()
 	{
@@ -50,7 +75,8 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 3,
 		keyName = "escClosesPrivateMessage",
 		name = "ESC closes PM window",
-		description = "Pressing Esc while typing a private message cancels and closes that message input only."
+		description = "Pressing Esc while typing a private message cancels and closes that message input only.",
+		section = fadeSettings
 	)
 	default boolean escClosesPrivateMessage()
 	{
@@ -61,7 +87,8 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 4,
 		keyName = "movableWidgetDisplay",
 		name = "Widget notification",
-		description = "How to show the unread indicator as a RuneLite overlay widget above the chatbox."
+		description = "How to show the unread indicator as a RuneLite overlay widget above the chatbox.",
+		section = widgetNotificationSection
 	)
 	default IndicatorDisplayOption movableWidgetDisplay()
 	{
@@ -73,30 +100,45 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 5,
 		keyName = "widgetTextColor",
 		name = "Widget text",
-		description = "Text color used for the movable widget indicator."
+		description = "Text color used for the movable widget indicator.",
+		section = widgetNotificationSection
 	)
 	default Color widgetTextColor()
 	{
 		return new Color(255, 235, 90);
 	}
 
-	@Alpha
 	@ConfigItem(
 		position = 6,
+		keyName = "widgetBoldText",
+		name = "Widget bold",
+		description = "Uses a bold version of RuneLite's infobox font for the widget notification.",
+		section = widgetNotificationSection
+	)
+	default boolean widgetBoldText()
+	{
+		return false;
+	}
+
+	@Alpha
+	@ConfigItem(
+		position = 7,
 		keyName = "widgetBackgroundColor",
 		name = "Widget background",
-		description = "Background color used for the movable widget indicator. Lower alpha makes it more transparent."
+		description = "Background color used for the movable widget indicator. Lower alpha makes it more transparent.",
+		section = widgetNotificationSection
 	)
 	default Color widgetBackgroundColor()
 	{
-		return new Color(35, 35, 35, 185);
+		return new Color(70, 61, 50, 156);
 	}
 
 	@ConfigItem(
-		position = 7,
+		position = 8,
 		keyName = "privateTabDisplay",
 		name = "Private tab notification",
-		description = "How to show the unread indicator on the Private chat tab."
+		description = "How to show the unread indicator on the Private chat tab.",
+		section = privateTabNotificationSection
 	)
 	default IndicatorDisplayOption privateTabDisplay()
 	{
@@ -105,10 +147,11 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 8,
+		position = 9,
 		keyName = "privateTabTextColor",
 		name = "Private tab text",
-		description = "Text color used for the Private chat tab indicator."
+		description = "Text color used for the Private chat tab indicator.",
+		section = privateTabNotificationSection
 	)
 	default Color privateTabTextColor()
 	{
@@ -116,10 +159,11 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 9,
+		position = 10,
 		keyName = "privateTabClickMarksRead",
 		name = "Private tab marks read",
-		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected."
+		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected.",
+		section = privateTabNotificationSection
 	)
 	default boolean privateTabClickMarksRead()
 	{
@@ -129,10 +173,11 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 10,
+		position = 11,
 		keyName = "indicatorBangSize",
 		name = "Private ! size",
-		description = "Font size used for the ! on the Private chat tab indicator."
+		description = "Font size used for the ! on the Private chat tab indicator.",
+		section = privateTabNotificationSection
 	)
 	default int indicatorBangSize()
 	{
@@ -142,10 +187,11 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 11,
+		position = 12,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
-		description = "Font size used for the unread count on the Private chat tab indicator."
+		description = "Font size used for the unread count on the Private chat tab indicator.",
+		section = privateTabNotificationSection
 	)
 	default int indicatorCountSize()
 	{
@@ -155,10 +201,11 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 12,
+		position = 13,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
-		description = "Horizontal offset for the unread indicator on the Private chat tab."
+		description = "Horizontal offset for the unread indicator on the Private chat tab.",
+		section = privateTabNotificationSection
 	)
 	default int indicatorOffsetX()
 	{
@@ -168,10 +215,11 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 13,
+		position = 14,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
-		description = "Vertical offset for the unread indicator on the Private chat tab."
+		description = "Vertical offset for the unread indicator on the Private chat tab.",
+		section = privateTabNotificationSection
 	)
 	default int indicatorOffsetY()
 	{
