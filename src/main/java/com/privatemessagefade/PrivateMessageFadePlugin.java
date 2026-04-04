@@ -58,6 +58,9 @@ public class PrivateMessageFadePlugin extends Plugin
 	@Inject
 	private PrivateMessageFadeOverlay overlay;
 
+	@Inject
+	private PrivateMessageFadeWidgetOverlay widgetOverlay;
+
 	private long lastActivityMillis;
 	private boolean privateReplyInputOpen;
 	private int unreadMessageCount;
@@ -95,6 +98,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		privateReplyInputOpen = isPrivateReplyInputOpen();
 		unreadMessageCount = 0;
 		overlayManager.add(overlay);
+		overlayManager.add(widgetOverlay);
 		keyManager.registerKeyListener(keyListener);
 		resetActivity();
 	}
@@ -103,6 +107,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	protected void shutDown()
 	{
 		overlayManager.remove(overlay);
+		overlayManager.remove(widgetOverlay);
 		keyManager.unregisterKeyListener(keyListener);
 		unreadMessageCount = 0;
 		restoreWidget();
@@ -193,6 +198,28 @@ public class PrivateMessageFadePlugin extends Plugin
 	boolean shouldShowUnreadIndicator()
 	{
 		return config.newMessageDisplay() && unreadMessageCount > 0 && !privateReplyInputOpen && isPrivateMessageFullyHidden(System.currentTimeMillis());
+	}
+
+	boolean shouldShowPrivateTabIndicator()
+	{
+		if (!shouldShowUnreadIndicator())
+		{
+			return false;
+		}
+
+		final IndicatorDisplayMode displayMode = config.indicatorDisplayMode();
+		return displayMode == IndicatorDisplayMode.PRIVATE_TAB || displayMode == IndicatorDisplayMode.BOTH;
+	}
+
+	boolean shouldShowMovableWidgetIndicator()
+	{
+		if (!shouldShowUnreadIndicator())
+		{
+			return false;
+		}
+
+		final IndicatorDisplayMode displayMode = config.indicatorDisplayMode();
+		return displayMode == IndicatorDisplayMode.MOVABLE_WIDGET || displayMode == IndicatorDisplayMode.BOTH;
 	}
 
 	boolean shouldRenderUnreadCount()

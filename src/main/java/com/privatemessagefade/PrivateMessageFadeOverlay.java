@@ -8,7 +8,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -17,12 +17,17 @@ import net.runelite.client.ui.overlay.components.TextComponent;
 
 public class PrivateMessageFadeOverlay extends Overlay
 {
-	private static final int LEFT_PADDING = 6;
+	private static final int RIGHT_PADDING = 3;
+	private static final int TOP_PADDING = 3;
 
 	private final Client client;
 	private final PrivateMessageFadePlugin plugin;
 	private final PrivateMessageFadeConfig config;
 	private final TextComponent textComponent = new TextComponent();
+	private Font bangFont;
+	private Font countFont;
+	private int bangFontSize = -1;
+	private int countFontSize = -1;
 
 	@Inject
 	private PrivateMessageFadeOverlay(Client client, PrivateMessageFadePlugin plugin, PrivateMessageFadeConfig config)
@@ -39,90 +44,67 @@ public class PrivateMessageFadeOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!plugin.shouldShowUnreadIndicator())
+		if (!plugin.shouldShowPrivateTabIndicator())
 		{
 			return null;
 		}
 
-		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
-		if (privateChatWidget == null)
+		final Rectangle privateTabBounds = getUsableBounds(client.getWidget(ComponentID.CHATBOX_TAB_PRIVATE));
+		if (privateTabBounds == null || privateTabBounds.isEmpty())
 		{
 			return null;
 		}
 
-		final Rectangle anchorBounds = getUsableBounds(privateChatWidget);
-		final Rectangle textBounds = getIndicatorBounds(privateChatWidget);
-		if (anchorBounds == null || anchorBounds.isEmpty() || textBounds == null || textBounds.isEmpty())
-		{
-			return null;
-		}
-
-		final Font bangFont = new Font("SansSerif", Font.BOLD, config.indicatorBangSize());
-		final Font countFont = new Font("SansSerif", Font.BOLD, config.indicatorCountSize());
+		updateFonts();
 		final Font originalFont = graphics.getFont();
 		graphics.setFont(bangFont);
 
 		final FontMetrics bangMetrics = graphics.getFontMetrics();
-		final int x = anchorBounds.x + LEFT_PADDING + config.indicatorOffsetX();
-		final int y = textBounds.y
-			+ Math.max(bangMetrics.getAscent(), (textBounds.height + bangMetrics.getAscent() - bangMetrics.getDescent()) / 2)
-			+ config.indicatorOffsetY();
+		final int x = privateTabBounds.x + privateTabBounds.width - RIGHT_PADDING + config.indicatorOffsetX();
+		final int y = privateTabBounds.y - TOP_PADDING + config.indicatorOffsetY();
+		final int baselineY = y + bangMetrics.getAscent();
 
 		graphics.setFont(originalFont);
-
-		textComponent.setPosition(new Point(x, y));
 
 		textComponent.setColor(config.indicatorColor());
 		textComponent.setFont(bangFont);
 		textComponent.setText("!");
+		final int bangX = x - bangMetrics.stringWidth("!");
+		textComponent.setPosition(new Point(bangX, baselineY));
 		Dimension dimension = textComponent.render(graphics);
 
 		if (plugin.shouldRenderUnreadCount())
 		{
-			final int countX = x + dimension.width + 2;
-			textComponent.setPosition(new Point(countX, y));
+			graphics.setFont(countFont);
+			final FontMetrics countMetrics = graphics.getFontMetrics();
+			final String unreadCount = String.valueOf(plugin.getUnreadCount());
+			final int countX = x + 2;
+			textComponent.setPosition(new Point(countX, baselineY));
 			textComponent.setFont(countFont);
-			textComponent.setText(String.valueOf(plugin.getUnreadCount()));
+			textComponent.setText(unreadCount);
 			final Dimension countDimension = textComponent.render(graphics);
 			dimension = new Dimension(dimension.width + 2 + countDimension.width, Math.max(dimension.height, countDimension.height));
 		}
 
+		graphics.setFont(originalFont);
 		return dimension;
 	}
 
-	private Rectangle getIndicatorBounds(Widget rootWidget)
+	private void updateFonts()
 	{
-		Rectangle bestBounds = getUsableBounds(rootWidget);
-		bestBounds = findBestBounds(rootWidget.getChildren(), bestBounds);
-		bestBounds = findBestBounds(rootWidget.getDynamicChildren(), bestBounds);
-		bestBounds = findBestBounds(rootWidget.getStaticChildren(), bestBounds);
-		bestBounds = findBestBounds(rootWidget.getNestedChildren(), bestBounds);
-		return bestBounds;
-	}
-
-	private Rectangle findBestBounds(Widget[] widgets, Rectangle currentBest)
-	{
-		if (widgets == null)
+		final int nextBangFontSize = config.indicatorBangSize();
+		if (bangFont == null || bangFontSize != nextBangFontSize)
 		{
-			return currentBest;
+			bangFont = new Font("SansSerif", Font.BOLD, nextBangFontSize);
+			bangFontSize = nextBangFontSize;
 		}
 
-		Rectangle bestBounds = currentBest;
-		for (Widget widget : widgets)
+		final int nextCountFontSize = config.indicatorCountSize();
+		if (countFont == null || countFontSize != nextCountFontSize)
 		{
-			if (widget == null)
-			{
-				continue;
-			}
-
-			final Rectangle candidateBounds = getIndicatorBounds(widget);
-			if (isBetterBounds(candidateBounds, bestBounds))
-			{
-				bestBounds = candidateBounds;
-			}
+			countFont = new Font("SansSerif", Font.BOLD, nextCountFontSize);
+			countFontSize = nextCountFontSize;
 		}
-
-		return bestBounds;
 	}
 
 	private static Rectangle getUsableBounds(Widget widget)
@@ -139,20 +121,5 @@ public class PrivateMessageFadeOverlay extends Overlay
 		}
 
 		return bounds;
-	}
-
-	private static boolean isBetterBounds(Rectangle candidate, Rectangle currentBest)
-	{
-		if (candidate == null || candidate.isEmpty())
-		{
-			return false;
-		}
-
-		if (currentBest == null || currentBest.isEmpty())
-		{
-			return true;
-		}
-
-		return candidate.width * candidate.height < currentBest.width * currentBest.height;
 	}
 }
