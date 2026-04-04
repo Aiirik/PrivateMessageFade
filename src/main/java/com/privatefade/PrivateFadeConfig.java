@@ -20,7 +20,7 @@ public interface PrivateFadeConfig extends Config
 	)
 	default int fadeDelaySeconds()
 	{
-		return 15;
+		return 10;
 	}
 
 	@ConfigItem(
@@ -101,7 +101,7 @@ public interface PrivateFadeConfig extends Config
 	)
 	default int indicatorBangSize()
 	{
-		return 16;
+		return 15;
 	}
 
 	@Range(min = 8, max = 32)
