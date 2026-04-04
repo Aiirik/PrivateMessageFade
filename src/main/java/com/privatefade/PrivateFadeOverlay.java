@@ -8,8 +8,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -44,7 +44,7 @@ public class PrivateFadeOverlay extends Overlay
 			return null;
 		}
 
-		final Widget privateChatWidget = client.getWidget(WidgetInfo.PRIVATE_CHAT_MESSAGE);
+		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
 		if (privateChatWidget == null)
 		{
 			return null;

@@ -6,13 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.VarClientIntChanged;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.vars.InputType;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -155,16 +155,6 @@ public class PrivateFadePlugin extends Plugin
 		return config.newMessageDisplay() && unreadMessageCount > 0 && !privateReplyInputOpen && isPrivateMessageFullyHidden(System.currentTimeMillis());
 	}
 
-	String getUnreadIndicatorText()
-	{
-		if (!config.showMessageCount() || unreadMessageCount <= 1)
-		{
-			return "!";
-		}
-
-		return "! " + unreadMessageCount;
-	}
-
 	boolean shouldRenderUnreadCount()
 	{
 		return config.showMessageCount() && unreadMessageCount > 1;
@@ -177,7 +167,7 @@ public class PrivateFadePlugin extends Plugin
 
 	private void applyPrivateMessageState()
 	{
-		final Widget privateChatWidget = client.getWidget(WidgetInfo.PRIVATE_CHAT_MESSAGE);
+		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
 		if (privateChatWidget == null)
 		{
 			return;
@@ -249,7 +239,7 @@ public class PrivateFadePlugin extends Plugin
 
 	private void restoreWidget()
 	{
-		final Widget privateChatWidget = client.getWidget(WidgetInfo.PRIVATE_CHAT_MESSAGE);
+		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
 		if (privateChatWidget != null)
 		{
 			restoreWidget(privateChatWidget);
