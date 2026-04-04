@@ -46,9 +46,9 @@ Typical commands:
 
 ### Project files
 
-- `src/main/java/com/example/PrivateFadePlugin.java`: main plugin logic
-- `src/main/java/com/example/PrivateFadeConfig.java`: plugin configuration
-- `src/test/java/com/example/PrivateFadePluginTest.java`: RuneLite test launcher
+- `src/main/java/com/aiirik/PrivateFadePlugin.java`: main plugin logic
+- `src/main/java/com/aiirik/PrivateFadeConfig.java`: plugin configuration
+- `src/test/java/com/aiirik/PrivateFadePluginTest.java`: RuneLite test launcher
 - `runelite-plugin.properties`: plugin metadata
 
 ## Status

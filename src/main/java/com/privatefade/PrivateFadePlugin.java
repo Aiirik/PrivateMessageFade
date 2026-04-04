@@ -1,4 +1,4 @@
-package com.aiirik;
+package com.privatefade;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;

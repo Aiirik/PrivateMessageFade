@@ -1,4 +1,4 @@
-package com.aiirik;
+package com.privatefade;
 
 import java.awt.Color;
 import net.runelite.client.config.Alpha;

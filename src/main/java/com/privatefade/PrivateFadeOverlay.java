@@ -1,4 +1,4 @@
-package com.aiirik;
+package com.privatefade;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -57,7 +57,6 @@ public class PrivateFadeOverlay extends Overlay
 			return null;
 		}
 
-		final String indicatorText = plugin.getUnreadIndicatorText();
 		final Font bangFont = new Font("SansSerif", Font.BOLD, config.indicatorBangSize());
 		final Font countFont = new Font("SansSerif", Font.BOLD, config.indicatorCountSize());
 		final Font originalFont = graphics.getFont();
