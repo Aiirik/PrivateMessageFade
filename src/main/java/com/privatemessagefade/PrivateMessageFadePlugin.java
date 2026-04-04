@@ -197,34 +197,27 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	boolean shouldShowUnreadIndicator()
 	{
-		return config.newMessageDisplay() && unreadMessageCount > 0 && !privateReplyInputOpen && isPrivateMessageFullyHidden(System.currentTimeMillis());
+		return unreadMessageCount > 0 && !privateReplyInputOpen && isPrivateMessageFullyHidden(System.currentTimeMillis());
 	}
 
 	boolean shouldShowPrivateTabIndicator()
 	{
-		if (!shouldShowUnreadIndicator())
-		{
-			return false;
-		}
-
-		final IndicatorDisplayMode displayMode = config.indicatorDisplayMode();
-		return displayMode == IndicatorDisplayMode.PRIVATE_TAB || displayMode == IndicatorDisplayMode.BOTH;
+		return shouldShowUnreadIndicator() && config.privateTabDisplay() != IndicatorDisplayOption.OFF;
 	}
 
 	boolean shouldShowMovableWidgetIndicator()
 	{
-		if (!shouldShowUnreadIndicator())
-		{
-			return false;
-		}
-
-		final IndicatorDisplayMode displayMode = config.indicatorDisplayMode();
-		return displayMode == IndicatorDisplayMode.MOVABLE_WIDGET || displayMode == IndicatorDisplayMode.BOTH;
+		return shouldShowUnreadIndicator() && config.movableWidgetDisplay() != IndicatorDisplayOption.OFF;
 	}
 
-	boolean shouldRenderUnreadCount()
+	boolean shouldRenderPrivateTabCount()
 	{
-		return config.showMessageCount() && unreadMessageCount > 1;
+		return config.privateTabDisplay() == IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
+	}
+
+	boolean shouldRenderMovableWidgetCount()
+	{
+		return config.movableWidgetDisplay() == IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
 	}
 
 	int getUnreadCount()

@@ -66,20 +66,21 @@ public class PrivateMessageFadeOverlay extends Overlay
 
 		graphics.setFont(originalFont);
 
-		textComponent.setColor(config.indicatorColor());
+		textComponent.setColor(config.privateTabTextColor());
 		textComponent.setFont(bangFont);
 		textComponent.setText("!");
 		final int bangX = x - bangMetrics.stringWidth("!");
 		textComponent.setPosition(new Point(bangX, baselineY));
 		Dimension dimension = textComponent.render(graphics);
 
-		if (plugin.shouldRenderUnreadCount())
+		if (plugin.shouldRenderPrivateTabCount())
 		{
 			graphics.setFont(countFont);
 			final FontMetrics countMetrics = graphics.getFontMetrics();
 			final String unreadCount = String.valueOf(plugin.getUnreadCount());
 			final int countX = x + 2;
 			textComponent.setPosition(new Point(countX, baselineY));
+			textComponent.setColor(config.privateTabTextColor());
 			textComponent.setFont(countFont);
 			textComponent.setText(unreadCount);
 			final Dimension countDimension = textComponent.render(graphics);

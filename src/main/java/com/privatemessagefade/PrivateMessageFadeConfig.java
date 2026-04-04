@@ -48,52 +48,41 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@ConfigItem(
 		position = 3,
-		keyName = "indicatorDisplayMode",
-		name = "Indicator display",
-		description = "Where to show the unread private-message indicator."
+		keyName = "escClosesPrivateMessage",
+		name = "ESC closes PM window",
+		description = "Pressing Esc while typing a private message cancels and closes that message input only."
 	)
-	default IndicatorDisplayMode indicatorDisplayMode()
+	default boolean escClosesPrivateMessage()
 	{
-		return IndicatorDisplayMode.PRIVATE_TAB;
+		return false;
 	}
 
 	@ConfigItem(
 		position = 4,
-		keyName = "newMessageDisplay",
-		name = "New message display",
-		description = "Shows an unread private-message indicator using the selected display mode."
+		keyName = "movableWidgetDisplay",
+		name = "Widget notification",
+		description = "How to show the unread indicator as a RuneLite overlay widget above the chatbox."
 	)
-	default boolean newMessageDisplay()
+	default IndicatorDisplayOption movableWidgetDisplay()
 	{
-		return true;
-	}
-
-	@ConfigItem(
-		position = 6,
-		keyName = "showMessageCount",
-		name = "Show message count",
-		description = "Shows !# for multiple unread messages instead of always showing !."
-	)
-	default boolean showMessageCount()
-	{
-		return true;
+		return IndicatorDisplayOption.COUNT;
 	}
 
 	@Alpha
 	@ConfigItem(
-		position = 7,
-		keyName = "indicatorColor",
-		name = "Indicator color",
-		description = "Color used for the unread indicator."
+		position = 5,
+		keyName = "widgetTextColor",
+		name = "Widget text",
+		description = "Text color used for the movable widget indicator."
 	)
-	default Color indicatorColor()
+	default Color widgetTextColor()
 	{
 		return new Color(255, 235, 90);
 	}
 
 	@Alpha
 	@ConfigItem(
-		position = 8,
+		position = 6,
 		keyName = "widgetBackgroundColor",
 		name = "Widget background",
 		description = "Background color used for the movable widget indicator. Lower alpha makes it more transparent."
@@ -103,13 +92,36 @@ public interface PrivateMessageFadeConfig extends Config
 		return new Color(35, 35, 35, 185);
 	}
 
+	@ConfigItem(
+		position = 7,
+		keyName = "privateTabDisplay",
+		name = "Private tab notification",
+		description = "How to show the unread indicator on the Private chat tab."
+	)
+	default IndicatorDisplayOption privateTabDisplay()
+	{
+		return IndicatorDisplayOption.OFF;
+	}
+
+	@Alpha
+	@ConfigItem(
+		position = 8,
+		keyName = "privateTabTextColor",
+		name = "Private tab text",
+		description = "Text color used for the Private chat tab indicator."
+	)
+	default Color privateTabTextColor()
+	{
+		return new Color(255, 235, 90);
+	}
+
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
 		position = 9,
 		keyName = "indicatorBangSize",
-		name = "! size",
-		description = "Font size used for the ! unread indicator."
+		name = "Private ! size",
+		description = "Font size used for the ! on the Private chat tab indicator."
 	)
 	default int indicatorBangSize()
 	{
@@ -121,8 +133,8 @@ public interface PrivateMessageFadeConfig extends Config
 	@ConfigItem(
 		position = 10,
 		keyName = "indicatorCountSize",
-		name = "Count size",
-		description = "Font size used for the unread count."
+		name = "Private count size",
+		description = "Font size used for the unread count on the Private chat tab indicator."
 	)
 	default int indicatorCountSize()
 	{
@@ -134,7 +146,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@ConfigItem(
 		position = 11,
 		keyName = "indicatorOffsetX",
-		name = "Offset X",
+		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab."
 	)
 	default int indicatorOffsetX()
@@ -147,22 +159,11 @@ public interface PrivateMessageFadeConfig extends Config
 	@ConfigItem(
 		position = 12,
 		keyName = "indicatorOffsetY",
-		name = "Offset Y",
+		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab."
 	)
 	default int indicatorOffsetY()
 	{
 		return 0;
-	}
-
-	@ConfigItem(
-		position = 13,
-		keyName = "escClosesPrivateMessage",
-		name = "ESC closes PM",
-		description = "Pressing Esc while typing a private message cancels and closes that message input only."
-	)
-	default boolean escClosesPrivateMessage()
-	{
-		return false;
 	}
 }

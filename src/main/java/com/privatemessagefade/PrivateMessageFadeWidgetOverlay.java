@@ -35,14 +35,14 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 			return null;
 		}
 
-		final String text = plugin.shouldRenderUnreadCount()
+		final String text = plugin.shouldRenderMovableWidgetCount()
 			? "! " + plugin.getUnreadCount()
 			: "!";
 
 		panelComponent.setBackgroundColor(config.widgetBackgroundColor());
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(text)
-			.color(config.indicatorColor())
+			.color(config.widgetTextColor())
 			.build());
 
 		panelComponent.setPreferredSize(new Dimension(
