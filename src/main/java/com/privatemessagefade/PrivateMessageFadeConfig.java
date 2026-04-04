@@ -115,10 +115,21 @@ public interface PrivateMessageFadeConfig extends Config
 		return new Color(255, 235, 90);
 	}
 
+	@ConfigItem(
+		position = 9,
+		keyName = "privateTabClickMarksRead",
+		name = "Private tab marks read",
+		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected."
+	)
+	default boolean privateTabClickMarksRead()
+	{
+		return false;
+	}
+
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 9,
+		position = 10,
 		keyName = "indicatorBangSize",
 		name = "Private ! size",
 		description = "Font size used for the ! on the Private chat tab indicator."
@@ -131,7 +142,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 10,
+		position = 11,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
 		description = "Font size used for the unread count on the Private chat tab indicator."
@@ -144,7 +155,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 11,
+		position = 12,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab."
@@ -157,7 +168,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 12,
+		position = 13,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab."

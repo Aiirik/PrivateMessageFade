@@ -14,6 +14,7 @@ import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.VarClientIntChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.vars.InputType;
@@ -34,6 +35,17 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class PrivateMessageFadePlugin extends Plugin
 {
+	private static final int[] CHAT_TAB_COMPONENT_IDS =
+	{
+		InterfaceID.Chatbox.CHAT_ALL,
+		InterfaceID.Chatbox.CHAT_GAME,
+		InterfaceID.Chatbox.CHAT_PUBLIC,
+		InterfaceID.Chatbox.CHAT_PRIVATE,
+		InterfaceID.Chatbox.CHAT_FRIENDSCHAT,
+		InterfaceID.Chatbox.CHAT_CLAN,
+		InterfaceID.Chatbox.CHAT_TRADE
+	};
+
 	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
 	{
 		PmChat.PM1 & 0xFFFF,
@@ -75,6 +87,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean privateReplyInputOpen;
 	private int unreadMessageCount;
 	private boolean pendingInitialization;
+	private boolean privateTabSelected;
 
 	private final KeyListener keyListener = new KeyListener()
 	{
@@ -135,7 +148,7 @@ public class PrivateMessageFadePlugin extends Plugin
 
 		if (isIncomingPrivateMessage(messageType))
 		{
-			if (privateReplyInputOpen)
+			if (isNotificationsSuppressedByPrivateTab() || privateReplyInputOpen)
 			{
 				clearUnreadMessages();
 			}
@@ -163,8 +176,15 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (pendingInitialization)
 		{
 			privateReplyInputOpen = isPrivateReplyInputOpen();
+			privateTabSelected = isPrivateTabSelected();
 			initializeActivityState();
 			pendingInitialization = false;
+		}
+
+		privateTabSelected = privateTabSelected || isPrivateTabSelected();
+		if (isNotificationsSuppressedByPrivateTab())
+		{
+			clearUnreadMessages();
 		}
 
 		if (privateReplyInputOpen)
@@ -206,6 +226,22 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 	}
 
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		final int widgetId = event.getWidgetId();
+		if (!isChatTabWidget(widgetId))
+		{
+			return;
+		}
+
+		privateTabSelected = widgetId == InterfaceID.Chatbox.CHAT_PRIVATE;
+		if (privateTabSelected && config.privateTabClickMarksRead())
+		{
+			clearUnreadMessages();
+		}
+	}
+
 	private void resetActivity()
 	{
 		lastActivityMillis = System.currentTimeMillis();
@@ -227,7 +263,10 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	boolean shouldShowUnreadIndicator()
 	{
-		return unreadMessageCount > 0 && !privateReplyInputOpen && isPrivateMessageFullyHidden(System.currentTimeMillis());
+		return unreadMessageCount > 0
+			&& !privateReplyInputOpen
+			&& !isNotificationsSuppressedByPrivateTab()
+			&& isPrivateMessageFullyHidden(System.currentTimeMillis());
 	}
 
 	boolean shouldShowPrivateTabIndicator()
@@ -359,6 +398,49 @@ public class PrivateMessageFadePlugin extends Plugin
 
 			final String text = widget.getText();
 			if (text != null && !text.trim().isEmpty())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean isPrivateTabSelected()
+	{
+		final Widget privateTabText = client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1);
+		if (privateTabText == null)
+		{
+			return false;
+		}
+
+		final int privateTextColor = privateTabText.getTextColor();
+		int maxOtherColor = Integer.MIN_VALUE;
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_ALL_TEXT1));
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_GAME_TEXT1));
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1));
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1));
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_CLAN_TEXT1));
+		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_TRADE_TEXT));
+		return privateTextColor > maxOtherColor;
+	}
+
+	private int getTabTextColor(int componentId)
+	{
+		final Widget widget = client.getWidget(componentId);
+		return widget != null ? widget.getTextColor() : Integer.MIN_VALUE;
+	}
+
+	private boolean isNotificationsSuppressedByPrivateTab()
+	{
+		return config.privateTabClickMarksRead() && privateTabSelected;
+	}
+
+	private boolean isChatTabWidget(int widgetId)
+	{
+		for (int chatTabComponentId : CHAT_TAB_COMPONENT_IDS)
+		{
+			if (chatTabComponentId == widgetId)
 			{
 				return true;
 			}
