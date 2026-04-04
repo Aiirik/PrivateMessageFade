@@ -120,9 +120,23 @@ public interface PrivateMessageFadeConfig extends Config
 		return false;
 	}
 
-	@Alpha
+	@Range(min = 0, max = 64)
+	@Units(Units.PIXELS)
 	@ConfigItem(
 		position = 7,
+		keyName = "widgetSize",
+		name = "Widget size",
+		description = "Configures the size of widget notifications in pixels. Set to 0 to use RuneLite's infobox size.",
+		section = widgetNotificationSection
+	)
+	default int widgetSize()
+	{
+		return 0;
+	}
+
+	@Alpha
+	@ConfigItem(
+		position = 8,
 		keyName = "widgetBackgroundColor",
 		name = "Widget background",
 		description = "Background color used for the movable widget indicator. Lower alpha makes it more transparent.",
@@ -134,7 +148,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 8,
+		position = 9,
 		keyName = "privateTabDisplay",
 		name = "Private tab notification",
 		description = "How to show the unread indicator on the Private chat tab.",
@@ -147,7 +161,7 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 9,
+		position = 10,
 		keyName = "privateTabTextColor",
 		name = "Private tab text",
 		description = "Text color used for the Private chat tab indicator.",
@@ -159,7 +173,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 10,
+		position = 11,
 		keyName = "privateTabClickMarksRead",
 		name = "Private tab marks read",
 		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected.",
@@ -173,7 +187,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 11,
+		position = 12,
 		keyName = "indicatorBangSize",
 		name = "Private ! size",
 		description = "Font size used for the ! on the Private chat tab indicator.",
@@ -187,7 +201,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 12,
+		position = 13,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
 		description = "Font size used for the unread count on the Private chat tab indicator.",
@@ -201,7 +215,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 13,
+		position = 14,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab.",
@@ -215,7 +229,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 14,
+		position = 15,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab.",
