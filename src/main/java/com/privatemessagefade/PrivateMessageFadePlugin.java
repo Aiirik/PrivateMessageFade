@@ -1,4 +1,4 @@
-package com.privatefade;
+package com.privatemessagefade;
 
 import com.google.inject.Provides;
 import java.awt.event.KeyEvent;
@@ -27,11 +27,11 @@ import net.runelite.client.ui.overlay.OverlayManager;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Private Fade",
+	name = "Private Message Fade",
 	description = "Hides split private chat after a configurable idle delay",
 	tags = {"private", "pm", "chat", "split"}
 )
-public class PrivateFadePlugin extends Plugin
+public class PrivateMessageFadePlugin extends Plugin
 {
 	private static final ChatMessageType[] PRIVATE_MESSAGE_TYPES =
 	{
@@ -44,7 +44,7 @@ public class PrivateFadePlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private PrivateFadeConfig config;
+	private PrivateMessageFadeConfig config;
 
 	@Inject
 	private OverlayManager overlayManager;
@@ -56,7 +56,7 @@ public class PrivateFadePlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
-	private PrivateFadeOverlay overlay;
+	private PrivateMessageFadeOverlay overlay;
 
 	private long lastActivityMillis;
 	private boolean privateReplyInputOpen;
@@ -348,8 +348,8 @@ public class PrivateFadePlugin extends Plugin
 	}
 
 	@Provides
-	PrivateFadeConfig provideConfig(ConfigManager configManager)
+	PrivateMessageFadeConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(PrivateFadeConfig.class);
+		return configManager.getConfig(PrivateMessageFadeConfig.class);
 	}
 }

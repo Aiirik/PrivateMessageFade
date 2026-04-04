@@ -1,4 +1,4 @@
-package com.privatefade;
+package com.privatemessagefade;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -15,17 +15,17 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.TextComponent;
 
-public class PrivateFadeOverlay extends Overlay
+public class PrivateMessageFadeOverlay extends Overlay
 {
 	private static final int LEFT_PADDING = 6;
 
 	private final Client client;
-	private final PrivateFadePlugin plugin;
-	private final PrivateFadeConfig config;
+	private final PrivateMessageFadePlugin plugin;
+	private final PrivateMessageFadeConfig config;
 	private final TextComponent textComponent = new TextComponent();
 
 	@Inject
-	private PrivateFadeOverlay(Client client, PrivateFadePlugin plugin, PrivateFadeConfig config)
+	private PrivateMessageFadeOverlay(Client client, PrivateMessageFadePlugin plugin, PrivateMessageFadeConfig config)
 	{
 		this.client = client;
 		this.plugin = plugin;

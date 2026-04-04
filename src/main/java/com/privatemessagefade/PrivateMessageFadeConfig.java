@@ -1,4 +1,4 @@
-package com.privatefade;
+package com.privatemessagefade;
 
 import java.awt.Color;
 import net.runelite.client.config.Alpha;
@@ -8,8 +8,8 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
-@ConfigGroup("privatefade")
-public interface PrivateFadeConfig extends Config
+@ConfigGroup("privatemessagefade")
+public interface PrivateMessageFadeConfig extends Config
 {
 	@Range(min = 0, max = 600)
 	@ConfigItem(

@@ -1,13 +1,13 @@
-package com.privatefade;
+package com.privatemessagefade;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class PrivateFadePluginTest
+public class PrivateMessageFadePluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(PrivateFadePlugin.class);
+		ExternalPluginManager.loadBuiltin(PrivateMessageFadePlugin.class);
 		RuneLite.main(args);
 	}
 }
