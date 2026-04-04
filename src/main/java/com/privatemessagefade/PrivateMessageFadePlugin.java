@@ -9,6 +9,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.ScriptID;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.InterfaceID.PmChat;
 import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
@@ -33,6 +34,15 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class PrivateMessageFadePlugin extends Plugin
 {
+	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
+	{
+		PmChat.PM1 & 0xFFFF,
+		PmChat.PM2 & 0xFFFF,
+		PmChat.PM3 & 0xFFFF,
+		PmChat.PM4 & 0xFFFF,
+		PmChat.PM5 & 0xFFFF
+	};
+
 	private static final ChatMessageType[] PRIVATE_MESSAGE_TYPES =
 	{
 		ChatMessageType.PRIVATECHAT,
@@ -64,6 +74,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	private long lastActivityMillis;
 	private boolean privateReplyInputOpen;
 	private int unreadMessageCount;
+	private boolean pendingInitialization;
 
 	private final KeyListener keyListener = new KeyListener()
 	{
@@ -95,12 +106,11 @@ public class PrivateMessageFadePlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		privateReplyInputOpen = isPrivateReplyInputOpen();
 		unreadMessageCount = 0;
+		pendingInitialization = true;
 		overlayManager.add(overlay);
 		overlayManager.add(widgetOverlay);
 		keyManager.registerKeyListener(keyListener);
-		resetActivity();
 	}
 
 	@Override
@@ -110,7 +120,8 @@ public class PrivateMessageFadePlugin extends Plugin
 		overlayManager.remove(widgetOverlay);
 		keyManager.unregisterKeyListener(keyListener);
 		unreadMessageCount = 0;
-		restoreWidget();
+		pendingInitialization = false;
+		clientThread.invokeLater((Runnable) this::restoreWidget);
 	}
 
 	@Subscribe
@@ -149,6 +160,13 @@ public class PrivateMessageFadePlugin extends Plugin
 			return;
 		}
 
+		if (pendingInitialization)
+		{
+			privateReplyInputOpen = isPrivateReplyInputOpen();
+			initializeActivityState();
+			pendingInitialization = false;
+		}
+
 		if (privateReplyInputOpen)
 		{
 			restoreWidget();
@@ -163,9 +181,8 @@ public class PrivateMessageFadePlugin extends Plugin
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
 		{
-			privateReplyInputOpen = isPrivateReplyInputOpen();
 			clearUnreadMessages();
-			resetActivity();
+			pendingInitialization = true;
 		}
 	}
 
@@ -193,6 +210,19 @@ public class PrivateMessageFadePlugin extends Plugin
 	{
 		lastActivityMillis = System.currentTimeMillis();
 		restoreWidget();
+	}
+
+	private void initializeActivityState()
+	{
+		restoreWidget();
+
+		if (!privateReplyInputOpen && hasExistingPrivateMessages())
+		{
+			lastActivityMillis = System.currentTimeMillis() - config.fadeDelaySeconds() * 1000L;
+			return;
+		}
+
+		lastActivityMillis = System.currentTimeMillis();
 	}
 
 	boolean shouldShowUnreadIndicator()
@@ -315,6 +345,26 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean isPrivateReplyInputOpen()
 	{
 		return client.getVarcIntValue(VarClientID.MESLAYERMODE) == InputType.PRIVATE_MESSAGE.getType();
+	}
+
+	private boolean hasExistingPrivateMessages()
+	{
+		for (int childId : PRIVATE_MESSAGE_CHILD_IDS)
+		{
+			final Widget widget = client.getWidget(InterfaceID.PM_CHAT, childId);
+			if (widget == null || widget.isHidden())
+			{
+				continue;
+			}
+
+			final String text = widget.getText();
+			if (text != null && !text.trim().isEmpty())
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void clearUnreadMessages()
