@@ -31,25 +31,8 @@ Setting `Fade delay` to `0` disables the inactivity hide behavior.
 
 ## Development
 
-This repository is set up as a RuneLite external plugin project.
-
-### Run locally
-
-Use a supported JDK for RuneLite plugin development, such as Java 17 or Java 21. The current Gradle setup in this project does not build correctly on Java 26.
-
-Typical commands:
-
-```powershell
-./gradlew.bat test
-./gradlew.bat run
-```
-
-### Project files
-
-- `src/main/java/com/aiirik/PrivateFadePlugin.java`: main plugin logic
-- `src/main/java/com/aiirik/PrivateFadeConfig.java`: plugin configuration
-- `src/test/java/com/aiirik/PrivateFadePluginTest.java`: RuneLite test launcher
-- `runelite-plugin.properties`: plugin metadata
+New features will be added if I think of anything else that would fit this plugin.
+Bug fixes will come with time.
 
 ## Status
 
