@@ -1,11 +1,13 @@
 package com.privatefade;
 
 import com.google.inject.Provides;
+import java.awt.event.KeyEvent;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.ScriptID;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.events.ChatMessage;
@@ -14,8 +16,11 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.VarClientIntChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.vars.InputType;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.input.KeyListener;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -45,11 +50,44 @@ public class PrivateFadePlugin extends Plugin
 	private OverlayManager overlayManager;
 
 	@Inject
+	private KeyManager keyManager;
+
+	@Inject
+	private ClientThread clientThread;
+
+	@Inject
 	private PrivateFadeOverlay overlay;
 
 	private long lastActivityMillis;
 	private boolean privateReplyInputOpen;
 	private int unreadMessageCount;
+
+	private final KeyListener keyListener = new KeyListener()
+	{
+		@Override
+		public void keyTyped(KeyEvent e)
+		{
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			if (!config.escClosesPrivateMessage()
+				|| e.getKeyCode() != KeyEvent.VK_ESCAPE
+				|| !privateReplyInputOpen)
+			{
+				return;
+			}
+
+			e.consume();
+			clientThread.invoke(() -> client.runScript(ScriptID.MESSAGE_LAYER_CLOSE, 1, 1, 0));
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e)
+		{
+		}
+	};
 
 	@Override
 	protected void startUp()
@@ -57,6 +95,7 @@ public class PrivateFadePlugin extends Plugin
 		privateReplyInputOpen = isPrivateReplyInputOpen();
 		unreadMessageCount = 0;
 		overlayManager.add(overlay);
+		keyManager.registerKeyListener(keyListener);
 		resetActivity();
 	}
 
@@ -64,6 +103,7 @@ public class PrivateFadePlugin extends Plugin
 	protected void shutDown()
 	{
 		overlayManager.remove(overlay);
+		keyManager.unregisterKeyListener(keyListener);
 		unreadMessageCount = 0;
 		restoreWidget();
 	}

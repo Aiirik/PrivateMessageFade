@@ -57,9 +57,31 @@ public interface PrivateFadeConfig extends Config
 		return true;
 	}
 
-	@Alpha
+	@ConfigItem(
+		position = 11,
+		keyName = "escClosesPrivateMessage",
+		name = "ESC closes PM",
+		description = "Pressing Esc while typing a private message cancels and closes that message input only."
+	)
+	default boolean escClosesPrivateMessage()
+	{
+		return false;
+	}
+
 	@ConfigItem(
 		position = 5,
+		keyName = "showMessageCount",
+		name = "Show message count",
+		description = "Shows !# for multiple unread messages instead of always showing !."
+	)
+	default boolean showMessageCount()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+		position = 6,
 		keyName = "indicatorColor",
 		name = "Indicator color",
 		description = "Color used for the unread private-message indicator."
@@ -72,7 +94,7 @@ public interface PrivateFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 6,
+		position = 7,
 		keyName = "indicatorBangSize",
 		name = "! size",
 		description = "Font size used for the ! unread private-message indicator."
@@ -85,7 +107,7 @@ public interface PrivateFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 7,
+		position = 8,
 		keyName = "indicatorCountSize",
 		name = "Count size",
 		description = "Font size used for the unread message count."
@@ -98,7 +120,7 @@ public interface PrivateFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 8,
+		position = 9,
 		keyName = "indicatorOffsetX",
 		name = "Offset X",
 		description = "Horizontal offset for the unread private-message indicator."
@@ -111,7 +133,7 @@ public interface PrivateFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 9,
+		position = 10,
 		keyName = "indicatorOffsetY",
 		name = "Offset Y",
 		description = "Vertical offset for the unread private-message indicator."
@@ -119,16 +141,5 @@ public interface PrivateFadeConfig extends Config
 	default int indicatorOffsetY()
 	{
 		return 0;
-	}
-
-	@ConfigItem(
-		position = 4,
-		keyName = "showMessageCount",
-		name = "Show message count",
-		description = "Shows !# for multiple unread messages instead of always showing !."
-	)
-	default boolean showMessageCount()
-	{
-		return true;
 	}
 }
