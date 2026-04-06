@@ -87,6 +87,7 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 		final boolean boldText = config.widgetBoldText();
 		final int style = boldText ? Font.BOLD : baseFont.getStyle();
 		final float baseFontSize = baseFont.getSize2D();
+		
 		if (widgetFont == null
 			|| cachedBoxSize != boxSize
 			|| cachedBoldText != boldText

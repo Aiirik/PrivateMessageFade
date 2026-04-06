@@ -2,6 +2,8 @@ package com.privatemessagefade;
 
 import com.google.inject.Provides;
 import java.awt.event.KeyEvent;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -34,46 +36,6 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class PrivateMessageFadePlugin extends Plugin
 {
-	private static final int[] CHAT_TAB_COMPONENT_IDS =
-	{
-		InterfaceID.Chatbox.CHAT_ALL,
-		InterfaceID.Chatbox.CHAT_ALL_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_ALL_TEXT1,
-		InterfaceID.Chatbox.CHAT_GAME,
-		InterfaceID.Chatbox.CHAT_GAME_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_GAME_TEXT1,
-		InterfaceID.Chatbox.CHAT_GAME_FILTER,
-		InterfaceID.Chatbox.CHAT_PUBLIC,
-		InterfaceID.Chatbox.CHAT_PUBLIC_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1,
-		InterfaceID.Chatbox.CHAT_PUBLIC_FILTER,
-		InterfaceID.Chatbox.CHAT_PRIVATE,
-		InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1,
-		InterfaceID.Chatbox.CHAT_PRIVATE_FILTER,
-		InterfaceID.Chatbox.CHAT_FRIENDSCHAT,
-		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1,
-		InterfaceID.Chatbox.CHAT_FRIENDSCHAT_FILTER,
-		InterfaceID.Chatbox.CHAT_CLAN,
-		InterfaceID.Chatbox.CHAT_CLAN_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_CLAN_TEXT1,
-		InterfaceID.Chatbox.CHAT_CLAN_FILTER,
-		InterfaceID.Chatbox.CHAT_TRADE
-		,
-		InterfaceID.Chatbox.CHAT_TRADE_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_TRADE_TEXT,
-		InterfaceID.Chatbox.CHAT_TRADE_FILTER
-	};
-
-	private static final int[] PRIVATE_TAB_COMPONENT_IDS =
-	{
-		InterfaceID.Chatbox.CHAT_PRIVATE,
-		InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC,
-		InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1,
-		InterfaceID.Chatbox.CHAT_PRIVATE_FILTER
-	};
-
 	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
 	{
 		PmChat.PM1 & 0xFFFF,
@@ -83,12 +45,18 @@ public class PrivateMessageFadePlugin extends Plugin
 		PmChat.PM5 & 0xFFFF
 	};
 
-	private static final ChatMessageType[] PRIVATE_MESSAGE_TYPES =
-	{
+	private static final Set<ChatMessageType> PRIVATE_MESSAGE_TYPES = EnumSet.of(
 		ChatMessageType.PRIVATECHAT,
 		ChatMessageType.PRIVATECHATOUT,
 		ChatMessageType.MODPRIVATECHAT
-	};
+	);
+
+	private static final Set<Integer> PRIVATE_TAB_COMPONENT_IDS = Set.of(
+		InterfaceID.Chatbox.CHAT_PRIVATE,
+		InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC,
+		InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1,
+		InterfaceID.Chatbox.CHAT_PRIVATE_FILTER
+	);
 
 	@Inject
 	private Client client;
@@ -461,20 +429,24 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 
 		final int privateTextColor = privateTabText.getTextColor();
-		int maxOtherColor = Integer.MIN_VALUE;
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_ALL_TEXT1));
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_GAME_TEXT1));
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1));
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1));
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_CLAN_TEXT1));
-		maxOtherColor = Math.max(maxOtherColor, getTabTextColor(InterfaceID.Chatbox.CHAT_TRADE_TEXT));
-		return privateTextColor > maxOtherColor;
-	}
+		final int[] otherTabIds = {
+			InterfaceID.Chatbox.CHAT_ALL_TEXT1,
+			InterfaceID.Chatbox.CHAT_GAME_TEXT1,
+			InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1,
+			InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1,
+			InterfaceID.Chatbox.CHAT_CLAN_TEXT1,
+			InterfaceID.Chatbox.CHAT_TRADE_TEXT
+		};
 
-	private int getTabTextColor(int componentId)
-	{
-		final Widget widget = client.getWidget(componentId);
-		return widget != null ? widget.getTextColor() : Integer.MIN_VALUE;
+		for (int tabId : otherTabIds)
+		{
+			final Widget widget = client.getWidget(tabId);
+			if (widget != null && privateTextColor <= widget.getTextColor())
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private boolean isNotificationsSuppressedByPrivateTab()
@@ -484,28 +456,19 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	private boolean isChatTabWidget(int widgetId)
 	{
-		for (int chatTabComponentId : CHAT_TAB_COMPONENT_IDS)
-		{
-			if (chatTabComponentId == widgetId)
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return (widgetId >= InterfaceID.Chatbox.CHAT_ALL && widgetId <= InterfaceID.Chatbox.CHAT_TRADE_FILTER)
+			|| widgetId == InterfaceID.Chatbox.CHAT_ALL_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_GAME_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_PUBLIC_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_FRIENDSCHAT_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_CLAN_GRAPHIC
+			|| widgetId == InterfaceID.Chatbox.CHAT_TRADE_GRAPHIC;
 	}
 
 	private boolean isPrivateTabWidget(int widgetId)
 	{
-		for (int privateTabComponentId : PRIVATE_TAB_COMPONENT_IDS)
-		{
-			if (privateTabComponentId == widgetId)
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return PRIVATE_TAB_COMPONENT_IDS.contains(widgetId);
 	}
 
 	private void clearUnreadMessages()
@@ -513,16 +476,16 @@ public class PrivateMessageFadePlugin extends Plugin
 		unreadMessageCount = 0;
 	}
 
-	private static void setWidgetTreeOpacity(Widget rootWidget, int opacity)
+	private static void setWidgetTreeOpacity(Widget widget, int opacity)
 	{
-		rootWidget.setOpacity(opacity);
-		applyOpacity(rootWidget.getChildren(), opacity);
-		applyOpacity(rootWidget.getDynamicChildren(), opacity);
-		applyOpacity(rootWidget.getStaticChildren(), opacity);
-		applyOpacity(rootWidget.getNestedChildren(), opacity);
+		widget.setOpacity(opacity);
+		applyOpacityRecursively(widget.getChildren(), opacity);
+		applyOpacityRecursively(widget.getDynamicChildren(), opacity);
+		applyOpacityRecursively(widget.getStaticChildren(), opacity);
+		applyOpacityRecursively(widget.getNestedChildren(), opacity);
 	}
 
-	private static void applyOpacity(Widget[] widgets, int opacity)
+	private static void applyOpacityRecursively(Widget[] widgets, int opacity)
 	{
 		if (widgets == null)
 		{
@@ -531,26 +494,16 @@ public class PrivateMessageFadePlugin extends Plugin
 
 		for (Widget widget : widgets)
 		{
-			if (widget == null)
+			if (widget != null)
 			{
-				continue;
+				setWidgetTreeOpacity(widget, opacity);
 			}
-
-			setWidgetTreeOpacity(widget, opacity);
 		}
 	}
 
 	private static boolean isPrivateMessage(ChatMessageType messageType)
 	{
-		for (ChatMessageType privateMessageType : PRIVATE_MESSAGE_TYPES)
-		{
-			if (privateMessageType == messageType)
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return PRIVATE_MESSAGE_TYPES.contains(messageType);
 	}
 
 	private static boolean isIncomingPrivateMessage(ChatMessageType messageType)
