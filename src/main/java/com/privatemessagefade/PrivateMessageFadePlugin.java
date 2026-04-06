@@ -3,7 +3,6 @@ package com.privatemessagefade;
 import com.google.inject.Provides;
 import java.awt.event.KeyEvent;
 import javax.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -27,7 +26,6 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
-@Slf4j
 @PluginDescriptor(
 	name = "Private Message Fade",
 	description = "Hides split private chat after a configurable idle delay",
@@ -210,7 +208,7 @@ public class PrivateMessageFadePlugin extends Plugin
 			pendingInitialization = false;
 		}
 
-		privateTabSelected = privateTabSelected || isPrivateTabSelected();
+		privateTabSelected = isPrivateTabSelected();
 		if (isNotificationsSuppressedByPrivateTab())
 		{
 			clearUnreadMessages();
@@ -258,7 +256,13 @@ public class PrivateMessageFadePlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		final int widgetId = event.getWidgetId();
+		final Widget widget = event.getMenuEntry().getWidget();
+		if (widget == null)
+		{
+			return;
+		}
+
+		final int widgetId = widget.getId();
 		if (!isChatTabWidget(widgetId))
 		{
 			return;

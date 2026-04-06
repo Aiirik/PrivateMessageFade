@@ -14,9 +14,16 @@ import net.runelite.client.ui.overlay.components.TitleComponent;
 
 public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 {
+	private static final int TEXT_PADDING = 4;
+
 	private final PrivateMessageFadePlugin plugin;
 	private final PrivateMessageFadeConfig config;
 	private final RuneLiteConfig runeLiteConfig;
+	private Font widgetFont;
+	private int cachedBoxSize = -1;
+	private boolean cachedBoldText;
+	private float cachedBaseFontSize = -1f;
+	private int cachedBaseFontStyle = Integer.MIN_VALUE;
 
 	@Inject
 	private PrivateMessageFadeWidgetOverlay(
@@ -50,24 +57,19 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 			? config.widgetSize()
 			: runeLiteConfig.infoBoxSize();
 		final Font originalFont = graphics.getFont();
-		final Font baseFont = runeLiteConfig.infoboxFont().getFont();
-		final int style = config.widgetBoldText() ? Font.BOLD : baseFont.getStyle();
-		final float scaledFontSize = Math.max(10f, baseFont.getSize2D() * boxSize / Math.max(1f, runeLiteConfig.infoBoxSize()));
-		final Font widgetFont = baseFont.deriveFont(style, scaledFontSize);
+		final Font currentWidgetFont = getWidgetFont(boxSize);
+		final int textWidth = graphics.getFontMetrics(currentWidgetFont).stringWidth(text);
+		final int preferredWidth = textWidth + TEXT_PADDING;
 
-		graphics.setFont(widgetFont);
+		graphics.setFont(currentWidgetFont);
 		panelComponent.setBackgroundColor(config.widgetBackgroundColor());
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(text)
 			.color(config.widgetTextColor())
-			.preferredSize(new Dimension(
-				Math.max(boxSize, graphics.getFontMetrics().stringWidth(text) + 10),
-				boxSize))
+			.preferredSize(new Dimension(preferredWidth, boxSize))
 			.build());
 
-		panelComponent.setPreferredSize(new Dimension(
-			Math.max(boxSize, graphics.getFontMetrics().stringWidth(text) + 10),
-			boxSize));
+		panelComponent.setPreferredSize(new Dimension(preferredWidth, boxSize));
 
 		try
 		{
@@ -77,5 +79,28 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 		{
 			graphics.setFont(originalFont);
 		}
+	}
+
+	private Font getWidgetFont(int boxSize)
+	{
+		final Font baseFont = runeLiteConfig.infoboxFont().getFont();
+		final boolean boldText = config.widgetBoldText();
+		final int style = boldText ? Font.BOLD : baseFont.getStyle();
+		final float baseFontSize = baseFont.getSize2D();
+		if (widgetFont == null
+			|| cachedBoxSize != boxSize
+			|| cachedBoldText != boldText
+			|| cachedBaseFontSize != baseFontSize
+			|| cachedBaseFontStyle != baseFont.getStyle())
+		{
+			final float scaledFontSize = Math.max(10f, baseFontSize * boxSize / Math.max(1f, runeLiteConfig.infoBoxSize()));
+			widgetFont = baseFont.deriveFont(style, scaledFontSize);
+			cachedBoxSize = boxSize;
+			cachedBoldText = boldText;
+			cachedBaseFontSize = baseFontSize;
+			cachedBaseFontStyle = baseFont.getStyle();
+		}
+
+		return widgetFont;
 	}
 }

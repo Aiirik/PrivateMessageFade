@@ -8,7 +8,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -49,7 +49,7 @@ public class PrivateMessageFadeOverlay extends Overlay
 			return null;
 		}
 
-		final Rectangle privateTabBounds = getUsableBounds(client.getWidget(ComponentID.CHATBOX_TAB_PRIVATE));
+		final Rectangle privateTabBounds = getUsableBounds(client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE));
 		if (privateTabBounds == null || privateTabBounds.isEmpty())
 		{
 			return null;
