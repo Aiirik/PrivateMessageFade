@@ -147,8 +147,22 @@ public interface PrivateMessageFadeConfig extends Config
 		return new Color(70, 61, 50, 156);
 	}
 
+	@Range(min = 0, max = 50)
+	@Units(Units.PIXELS)
 	@ConfigItem(
 		position = 9,
+		keyName = "widgetCountSpacing",
+		name = "Widget !# spacing",
+		description = "Number of spaces between ! and count. (0 = no space, 50 = maximum)",
+		section = widgetNotificationSection
+	)
+	default int widgetCountSpacing()
+	{
+		return 0;
+	}
+
+	@ConfigItem(
+		position = 10,
 		keyName = "privateTabDisplay",
 		name = "Private tab notification",
 		description = "How to show the unread indicator on the Private chat tab.",
@@ -198,10 +212,24 @@ public interface PrivateMessageFadeConfig extends Config
 		return 15;
 	}
 
-	@Range(min = 8, max = 32)
+	@Range(min = 0, max = 50)
 	@Units(Units.PIXELS)
 	@ConfigItem(
 		position = 13,
+		keyName = "privateTabCountSpacing",
+		name = "Private !# spacing",
+		description = "Number of spaces between ! and count on the Private tab. (0 = no space, 50 = maximum)",
+		section = privateTabNotificationSection
+	)
+	default int privateTabCountSpacing()
+	{
+		return 0;
+	}
+
+	@Range(min = 8, max = 32)
+	@Units(Units.PIXELS)
+	@ConfigItem(
+		position = 14,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
 		description = "Font size used for the unread count on the Private chat tab indicator.",
@@ -215,7 +243,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 14,
+		position = 15,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab.",
@@ -229,7 +257,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 15,
+		position = 16,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab.",

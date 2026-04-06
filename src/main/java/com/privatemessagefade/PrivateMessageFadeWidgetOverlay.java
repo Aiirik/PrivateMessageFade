@@ -81,8 +81,10 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 			}
 		}
 
+		// Build text with configurable spacing
+		final String spacing = " ".repeat(config.widgetCountSpacing());
 		final String text = plugin.shouldRenderMovableWidgetCount()
-			? "! " + currentUnreadCount
+			? "!" + spacing + currentUnreadCount
 			: "!";
 
 		final int boxSize = config.widgetSize() > 0
