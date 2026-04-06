@@ -10,6 +10,7 @@ import net.runelite.api.ScriptID;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.InterfaceID.PmChat;
 import net.runelite.api.gameval.VarClientID;
+import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -219,6 +220,15 @@ public class PrivateMessageFadePlugin extends Plugin
 			restoreWidget();
 			return;
 		}
+	}
+
+	@Subscribe
+	public void onBeforeRender(BeforeRender beforeRender)
+	{
+		if (client.getGameState() != GameState.LOGGED_IN || privateReplyInputOpen)
+		{
+			return;
+		}
 
 		applyPrivateMessageState();
 	}
@@ -368,7 +378,10 @@ public class PrivateMessageFadePlugin extends Plugin
 			return;
 		}
 
-		final int opacity = (int) Math.min(255L, fadeElapsedMillis * 255L / fadeDurationMillis);
+		// Smooth float-based opacity calculation for better visual quality
+		final float alphaProgress = (float) fadeElapsedMillis / fadeDurationMillis;
+		final float clampedAlpha = Math.max(0.0f, Math.min(1.0f, alphaProgress));
+		final int opacity = Math.round(clampedAlpha * 255f);
 		setWidgetTreeOpacity(privateChatWidget, opacity);
 	}
 

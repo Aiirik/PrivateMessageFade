@@ -37,8 +37,8 @@ public interface PrivateMessageFadeConfig extends Config
 	@ConfigItem(
 		position = 0,
 		keyName = "fadeDelaySeconds",
-		name = "Fade delay",
-		description = "Seconds of split private chat inactivity before it hides. Set to 0 to disable.",
+		name = "Display Duration",
+		description = "How long (seconds) split private chat stays at full opacity before fading. Set to 0 to disable.",
 		section = fadeSettings
 	)
 	default int fadeDelaySeconds()
@@ -62,8 +62,8 @@ public interface PrivateMessageFadeConfig extends Config
 	@ConfigItem(
 		position = 2,
 		keyName = "fadeDurationSeconds",
-		name = "Fade duration",
-		description = "How long the fade animation lasts after the idle delay.",
+		name = "Fade Duration",
+		description = "How long (seconds) the fade-out animation takes after the display duration.",
 		section = fadeSettings
 	)
 	default int fadeDurationSeconds()
