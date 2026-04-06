@@ -84,6 +84,9 @@ public class PrivateMessageFadePlugin extends Plugin
 	private int unreadMessageCount;
 	private boolean pendingInitialization;
 	private boolean privateTabSelected;
+	private int lastAppliedOpacity = -1;
+	private long lastTabCheckMillis = -1;
+	private boolean cachedPrivateTabSelected;
 
 	private final KeyListener keyListener = new KeyListener()
 	{
@@ -134,7 +137,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onChatMessage(ChatMessage chatMessage)
 	{
 		final ChatMessageType messageType = chatMessage.getType();
@@ -163,7 +165,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onGameTick(GameTick gameTick)
 	{
 		if (client.getGameState() != GameState.LOGGED_IN)
@@ -174,12 +175,22 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (pendingInitialization)
 		{
 			privateReplyInputOpen = isPrivateReplyInputOpen();
-			privateTabSelected = isPrivateTabSelected();
+			cachedPrivateTabSelected = calculatePrivateTabSelected();
+			privateTabSelected = cachedPrivateTabSelected;
+			lastTabCheckMillis = System.currentTimeMillis();
 			initializeActivityState();
 			pendingInitialization = false;
 		}
 
-		privateTabSelected = isPrivateTabSelected();
+		// Recalculate private tab selection only every 100ms to reduce lookups
+		final long now = System.currentTimeMillis();
+		if (now - lastTabCheckMillis > 100L)
+		{
+			cachedPrivateTabSelected = calculatePrivateTabSelected();
+			privateTabSelected = cachedPrivateTabSelected;
+			lastTabCheckMillis = now;
+		}
+
 		if (isNotificationsSuppressedByPrivateTab())
 		{
 			clearUnreadMessages();
@@ -192,7 +203,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onBeforeRender(BeforeRender beforeRender)
 	{
 		if (client.getGameState() != GameState.LOGGED_IN || privateReplyInputOpen)
@@ -204,7 +214,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
@@ -215,7 +224,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onVarClientIntChanged(VarClientIntChanged varClientIntChanged)
 	{
 		if (varClientIntChanged.getIndex() != VarClientID.MESLAYERMODE)
@@ -236,7 +244,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
-	@SuppressWarnings("unused")
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
 		final Widget widget = event.getMenuEntry().getWidget();
@@ -321,7 +328,8 @@ public class PrivateMessageFadePlugin extends Plugin
 		final int fadeDelaySeconds = config.fadeDelaySeconds();
 		if (fadeDelaySeconds <= 0)
 		{
-			restoreWidget(privateChatWidget);
+			applyOpacityIfChanged(privateChatWidget, 0);
+			privateChatWidget.setHidden(true);
 			return;
 		}
 
@@ -329,13 +337,14 @@ public class PrivateMessageFadePlugin extends Plugin
 		final long hideAtMillis = getHideAtMillis();
 		if (now < hideAtMillis)
 		{
-			restoreWidget(privateChatWidget);
+			applyOpacityIfChanged(privateChatWidget, 0);
+			privateChatWidget.setHidden(false);
 			return;
 		}
 
 		if (!config.enableFadeEffect())
 		{
-			setWidgetTreeOpacity(privateChatWidget, 0);
+			applyOpacityIfChanged(privateChatWidget, 255);
 			privateChatWidget.setHidden(true);
 			return;
 		}
@@ -346,16 +355,24 @@ public class PrivateMessageFadePlugin extends Plugin
 		final long fadeElapsedMillis = now - hideAtMillis;
 		if (fadeElapsedMillis >= fadeDurationMillis)
 		{
-			setWidgetTreeOpacity(privateChatWidget, 255);
+			applyOpacityIfChanged(privateChatWidget, 255);
 			privateChatWidget.setHidden(true);
 			return;
 		}
 
-		// Smooth float-based opacity calculation for better visual quality
 		final float alphaProgress = (float) fadeElapsedMillis / fadeDurationMillis;
 		final float clampedAlpha = Math.max(0.0f, Math.min(1.0f, alphaProgress));
 		final int opacity = Math.round(clampedAlpha * 255f);
-		setWidgetTreeOpacity(privateChatWidget, opacity);
+		applyOpacityIfChanged(privateChatWidget, opacity);
+	}
+
+	private void applyOpacityIfChanged(Widget widget, int opacity)
+	{
+		if (opacity != lastAppliedOpacity)
+		{
+			applyOpacityToWidgetTree(widget, opacity);
+			lastAppliedOpacity = opacity;
+		}
 	}
 
 	private boolean isPrivateMessageFullyHidden(long now)
@@ -397,7 +414,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	private static void restoreWidget(Widget privateChatWidget)
 	{
 		privateChatWidget.setHidden(false);
-		setWidgetTreeOpacity(privateChatWidget, 0);
+		applyOpacityToWidgetTree(privateChatWidget, 0);
 	}
 
 	private boolean isPrivateReplyInputOpen()
@@ -407,6 +424,11 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	private boolean hasExistingPrivateMessages()
 	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return false;
+		}
+
 		for (int childId : PRIVATE_MESSAGE_CHILD_IDS)
 		{
 			final Widget widget = client.getWidget(InterfaceID.PM_CHAT, childId);
@@ -416,7 +438,7 @@ public class PrivateMessageFadePlugin extends Plugin
 			}
 
 			final String text = widget.getText();
-			if (text != null && !text.trim().isEmpty())
+			if (text != null && !text.isBlank())
 			{
 				return true;
 			}
@@ -426,6 +448,11 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	private boolean isPrivateTabSelected()
+	{
+		return cachedPrivateTabSelected;
+	}
+
+	private boolean calculatePrivateTabSelected()
 	{
 		final Widget privateTabText = client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1);
 		if (privateTabText == null)
@@ -474,13 +501,10 @@ public class PrivateMessageFadePlugin extends Plugin
 		unreadMessageCount = 0;
 	}
 
-	private static void setWidgetTreeOpacity(Widget widget, int opacity)
+	private static void applyOpacityToWidgetTree(Widget widget, int opacity)
 	{
 		widget.setOpacity(opacity);
 		applyOpacityRecursively(widget.getChildren(), opacity);
-		applyOpacityRecursively(widget.getDynamicChildren(), opacity);
-		applyOpacityRecursively(widget.getStaticChildren(), opacity);
-		applyOpacityRecursively(widget.getNestedChildren(), opacity);
 	}
 
 	private static void applyOpacityRecursively(Widget[] widgets, int opacity)
@@ -494,7 +518,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			if (widget != null)
 			{
-				setWidgetTreeOpacity(widget, opacity);
+				applyOpacityToWidgetTree(widget, opacity);
 			}
 		}
 	}
@@ -510,7 +534,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Provides
-	@SuppressWarnings("unused")
 	PrivateMessageFadeConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(PrivateMessageFadeConfig.class);

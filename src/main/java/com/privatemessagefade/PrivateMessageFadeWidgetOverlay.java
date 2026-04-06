@@ -1,5 +1,8 @@
 package com.privatemessagefade;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -15,6 +18,7 @@ import net.runelite.client.ui.overlay.components.TitleComponent;
 public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 {
 	private static final int TEXT_PADDING = 4;
+	private static final long FADE_IN_DURATION_MS = 300; // Fixed duration for smooth fade-in
 
 	private final PrivateMessageFadePlugin plugin;
 	private final PrivateMessageFadeConfig config;
@@ -23,6 +27,8 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 	private int cachedBoxSize = -1;
 	private boolean cachedBoldText;
 	private float cachedBaseFontSize = -1f;
+	private long fadeInStartTime = -1;
+	private int previousUnreadCount = 0;
 
 	@Inject
 	private PrivateMessageFadeWidgetOverlay(
@@ -45,11 +51,38 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 	{
 		if (!plugin.shouldShowMovableWidgetIndicator())
 		{
+			fadeInStartTime = -1;
+			previousUnreadCount = 0;
 			return null;
 		}
 
+		final int currentUnreadCount = plugin.getUnreadCount();
+		
+		// Track when unread count first appears or changes - always fade in
+		if (currentUnreadCount != previousUnreadCount)
+		{
+			fadeInStartTime = System.currentTimeMillis();
+			previousUnreadCount = currentUnreadCount;
+		}
+
+		// Calculate fade-in opacity (0.0 to 1.0)
+		float opacity = 1.0f;
+		if (fadeInStartTime >= 0)
+		{
+			final long elapsed = System.currentTimeMillis() - fadeInStartTime;
+			if (elapsed < FADE_IN_DURATION_MS)
+			{
+				opacity = (float) elapsed / FADE_IN_DURATION_MS;
+			}
+			else
+			{
+				fadeInStartTime = -1; // Animation complete
+				opacity = 1.0f;
+			}
+		}
+
 		final String text = plugin.shouldRenderMovableWidgetCount()
-			? "! " + plugin.getUnreadCount()
+			? "! " + currentUnreadCount
 			: "!";
 
 		final int boxSize = config.widgetSize() > 0
@@ -72,7 +105,21 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 
 		try
 		{
-			return super.render(graphics);
+			// Apply opacity via graphics composite during fade-in
+			final Composite originalComposite = graphics.getComposite();
+			if (opacity < 1.0f)
+			{
+				graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+			}
+			
+			final Dimension result = super.render(graphics);
+			
+			if (opacity < 1.0f)
+			{
+				graphics.setComposite(originalComposite);
+			}
+			
+			return result;
 		}
 		finally
 		{
