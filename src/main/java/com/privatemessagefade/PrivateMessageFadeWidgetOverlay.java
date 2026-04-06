@@ -23,7 +23,6 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 	private int cachedBoxSize = -1;
 	private boolean cachedBoldText;
 	private float cachedBaseFontSize = -1f;
-	private int cachedBaseFontStyle = Integer.MIN_VALUE;
 
 	@Inject
 	private PrivateMessageFadeWidgetOverlay(
@@ -85,21 +84,19 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 	{
 		final Font baseFont = runeLiteConfig.infoboxFont().getFont();
 		final boolean boldText = config.widgetBoldText();
-		final int style = boldText ? Font.BOLD : baseFont.getStyle();
+		final int style = boldText ? Font.BOLD : Font.PLAIN;
 		final float baseFontSize = baseFont.getSize2D();
 		
 		if (widgetFont == null
 			|| cachedBoxSize != boxSize
 			|| cachedBoldText != boldText
-			|| cachedBaseFontSize != baseFontSize
-			|| cachedBaseFontStyle != baseFont.getStyle())
+			|| cachedBaseFontSize != baseFontSize)
 		{
 			final float scaledFontSize = Math.max(10f, baseFontSize * boxSize / Math.max(1f, runeLiteConfig.infoBoxSize()));
 			widgetFont = baseFont.deriveFont(style, scaledFontSize);
 			cachedBoxSize = boxSize;
 			cachedBoldText = boldText;
 			cachedBaseFontSize = baseFontSize;
-			cachedBaseFontStyle = baseFont.getStyle();
 		}
 
 		return widgetFont;

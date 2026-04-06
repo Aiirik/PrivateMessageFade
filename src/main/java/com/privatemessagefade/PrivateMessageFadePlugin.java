@@ -134,6 +134,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onChatMessage(ChatMessage chatMessage)
 	{
 		final ChatMessageType messageType = chatMessage.getType();
@@ -162,6 +163,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onGameTick(GameTick gameTick)
 	{
 		if (client.getGameState() != GameState.LOGGED_IN)
@@ -186,11 +188,11 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (privateReplyInputOpen)
 		{
 			restoreWidget();
-			return;
 		}
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onBeforeRender(BeforeRender beforeRender)
 	{
 		if (client.getGameState() != GameState.LOGGED_IN || privateReplyInputOpen)
@@ -202,6 +204,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
@@ -212,6 +215,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onVarClientIntChanged(VarClientIntChanged varClientIntChanged)
 	{
 		if (varClientIntChanged.getIndex() != VarClientID.MESLAYERMODE)
@@ -232,6 +236,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Subscribe
+	@SuppressWarnings("unused")
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
 		final Widget widget = event.getMenuEntry().getWidget();
@@ -456,14 +461,7 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	private boolean isChatTabWidget(int widgetId)
 	{
-		return (widgetId >= InterfaceID.Chatbox.CHAT_ALL && widgetId <= InterfaceID.Chatbox.CHAT_TRADE_FILTER)
-			|| widgetId == InterfaceID.Chatbox.CHAT_ALL_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_GAME_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_PUBLIC_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_PRIVATE_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_FRIENDSCHAT_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_CLAN_GRAPHIC
-			|| widgetId == InterfaceID.Chatbox.CHAT_TRADE_GRAPHIC;
+		return widgetId >= InterfaceID.Chatbox.CHAT_ALL && widgetId <= InterfaceID.Chatbox.CHAT_TRADE_FILTER;
 	}
 
 	private boolean isPrivateTabWidget(int widgetId)
@@ -512,6 +510,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	}
 
 	@Provides
+	@SuppressWarnings("unused")
 	PrivateMessageFadeConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(PrivateMessageFadeConfig.class);
