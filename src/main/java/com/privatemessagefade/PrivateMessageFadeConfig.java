@@ -12,6 +12,14 @@ import net.runelite.client.config.Units;
 @ConfigGroup("privatemessagefade")
 public interface PrivateMessageFadeConfig extends Config
 {
+	/* Indicator display options for widgets and the private tab. Moved here to keep the small enum next to the config using it. */
+	enum IndicatorDisplayOption
+	{
+		OFF,
+		NO_COUNT,
+		COUNT
+	}
+
 	@ConfigSection(
 		name = "Fade settings",
 		description = "Settings for split private message fading.",

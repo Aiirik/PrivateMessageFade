@@ -294,22 +294,22 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	boolean shouldShowPrivateTabIndicator()
 	{
-		return shouldShowUnreadIndicator() && config.privateTabDisplay() != IndicatorDisplayOption.OFF;
+		return shouldShowUnreadIndicator() && config.privateTabDisplay() != PrivateMessageFadeConfig.IndicatorDisplayOption.OFF;
 	}
 
 	boolean shouldShowMovableWidgetIndicator()
 	{
-		return shouldShowUnreadIndicator() && config.movableWidgetDisplay() != IndicatorDisplayOption.OFF;
+		return shouldShowUnreadIndicator() && config.movableWidgetDisplay() != PrivateMessageFadeConfig.IndicatorDisplayOption.OFF;
 	}
 
 	boolean shouldRenderPrivateTabCount()
 	{
-		return config.privateTabDisplay() == IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
+		return config.privateTabDisplay() == PrivateMessageFadeConfig.IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
 	}
 
 	boolean shouldRenderMovableWidgetCount()
 	{
-		return config.movableWidgetDisplay() == IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
+		return config.movableWidgetDisplay() == PrivateMessageFadeConfig.IndicatorDisplayOption.COUNT && unreadMessageCount > 1;
 	}
 
 	int getUnreadCount()
