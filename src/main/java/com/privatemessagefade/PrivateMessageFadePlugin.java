@@ -85,8 +85,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean pendingInitialization;
 	private boolean privateTabSelected;
 	private int lastAppliedOpacity = -1;
-	private long lastTabCheckMillis = -1;
-	private boolean cachedPrivateTabSelected;
+	private boolean initializeOnNextLoggedIn;
 
 	private final KeyListener keyListener = new KeyListener()
 	{
@@ -120,6 +119,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	{
 		unreadMessageCount = 0;
 		pendingInitialization = true;
+		initializeOnNextLoggedIn = client.getGameState() != GameState.LOGGED_IN;
 		overlayManager.add(overlay);
 		overlayManager.add(widgetOverlay);
 		keyManager.registerKeyListener(keyListener);
@@ -133,6 +133,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		keyManager.unregisterKeyListener(keyListener);
 		unreadMessageCount = 0;
 		pendingInitialization = false;
+		initializeOnNextLoggedIn = false;
 		clientThread.invokeLater((Runnable) this::restoreWidget);
 	}
 
@@ -175,20 +176,9 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (pendingInitialization)
 		{
 			privateReplyInputOpen = isPrivateReplyInputOpen();
-			cachedPrivateTabSelected = calculatePrivateTabSelected();
-			privateTabSelected = cachedPrivateTabSelected;
-			lastTabCheckMillis = System.currentTimeMillis();
+			privateTabSelected = calculatePrivateTabSelected();
 			initializeActivityState();
 			pendingInitialization = false;
-		}
-
-		// Recalculate private tab selection only every 100ms to reduce lookups
-		final long now = System.currentTimeMillis();
-		if (now - lastTabCheckMillis > 100L)
-		{
-			cachedPrivateTabSelected = calculatePrivateTabSelected();
-			privateTabSelected = cachedPrivateTabSelected;
-			lastTabCheckMillis = now;
 		}
 
 		if (isNotificationsSuppressedByPrivateTab())
@@ -198,6 +188,13 @@ public class PrivateMessageFadePlugin extends Plugin
 
 		if (privateReplyInputOpen)
 		{
+			restoreWidget();
+			return;
+		}
+
+		if (shouldKeepSplitChatOpenOnPrivateTab())
+		{
+			lastActivityMillis = System.currentTimeMillis();
 			restoreWidget();
 		}
 	}
@@ -216,10 +213,18 @@ public class PrivateMessageFadePlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+		final GameState currentGameState = gameStateChanged.getGameState();
+		if (shouldInitializeOnFutureLoggedIn(currentGameState))
+		{
+			initializeOnNextLoggedIn = true;
+			return;
+		}
+
+		if (currentGameState == GameState.LOGGED_IN && initializeOnNextLoggedIn)
 		{
 			clearUnreadMessages();
 			pendingInitialization = true;
+			initializeOnNextLoggedIn = false;
 		}
 	}
 
@@ -238,8 +243,8 @@ public class PrivateMessageFadePlugin extends Plugin
 			if (replyInputNowOpen)
 			{
 				clearUnreadMessages();
+				resetActivity();
 			}
-			resetActivity();
 		}
 	}
 
@@ -263,6 +268,11 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			clearUnreadMessages();
 		}
+
+		if (privateTabSelected && config.openSplitChatOnPrivateTab())
+		{
+			resetActivity();
+		}
 	}
 
 	private void resetActivity()
@@ -277,7 +287,8 @@ public class PrivateMessageFadePlugin extends Plugin
 
 		if (!privateReplyInputOpen && hasExistingPrivateMessages())
 		{
-			lastActivityMillis = System.currentTimeMillis() - config.fadeDelaySeconds() * 1000L;
+			final long now = System.currentTimeMillis();
+			lastActivityMillis = now;
 			return;
 		}
 
@@ -447,11 +458,6 @@ public class PrivateMessageFadePlugin extends Plugin
 		return false;
 	}
 
-	private boolean isPrivateTabSelected()
-	{
-		return cachedPrivateTabSelected;
-	}
-
 	private boolean calculatePrivateTabSelected()
 	{
 		final Widget privateTabText = client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1);
@@ -486,6 +492,11 @@ public class PrivateMessageFadePlugin extends Plugin
 		return config.privateTabClickMarksRead() && privateTabSelected;
 	}
 
+	private boolean shouldKeepSplitChatOpenOnPrivateTab()
+	{
+		return privateTabSelected && config.keepSplitChatOpenOnPrivateTab();
+	}
+
 	private boolean isChatTabWidget(int widgetId)
 	{
 		return widgetId >= InterfaceID.Chatbox.CHAT_ALL && widgetId <= InterfaceID.Chatbox.CHAT_TRADE_FILTER;
@@ -499,6 +510,15 @@ public class PrivateMessageFadePlugin extends Plugin
 	private void clearUnreadMessages()
 	{
 		unreadMessageCount = 0;
+	}
+
+	private static boolean shouldInitializeOnFutureLoggedIn(GameState gameState)
+	{
+		return gameState == GameState.UNKNOWN
+			|| gameState == GameState.LOGIN_SCREEN
+			|| gameState == GameState.LOGGING_IN
+			|| gameState == GameState.CONNECTION_LOST
+			|| gameState == GameState.HOPPING;
 	}
 
 	private static void applyOpacityToWidgetTree(Widget widget, int opacity)

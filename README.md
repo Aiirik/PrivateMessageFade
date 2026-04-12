@@ -16,6 +16,8 @@ By default, Old School RuneScape keeps split private messages visible until some
 - Optional RuneLite-style movable notification widget above the chatbox
 - Separate `Off`, `No count`, and `Count` display modes for both notification styles
 - Optional `Private tab marks read` behavior to clear unread notifications when the user switches to the `Private` tab
+- Optional `Private tab opens split chat` behavior to restore split PM visibility when switching to that tab
+- Optional `Keep split chat open` behavior to prevent fading while the `Private` tab is selected
 - Optional `ESC closes PM window` behavior while typing a private reply
 
 ## Notification Modes
@@ -71,6 +73,10 @@ Setting `Fade delay` to `0` disables split-PM hiding.
   Text color for the `Private` tab notification
 - `Private tab marks read`
   Clears unread notifications when the `Private` tab is opened and suppresses notifications while that tab is active
+- `Private tab opens split chat`
+  Restores split PM visibility when the `Private` tab is selected
+- `Keep split chat open`
+  Prevents split PMs from fading while the `Private` tab is selected
 - `Private ! size`
   Font size for the `!` on the `Private` tab
 - `Private count size`
@@ -87,6 +93,8 @@ Setting `Fade delay` to `0` disables split-PM hiding.
 - Opening the private reply input restores split PM visibility
 - While the private reply input is open, split PMs remain visible
 - If split PM text already exists when the plugin becomes active, the plugin can still fade that text without requiring a full RuneLite restart
+- Existing split PM text shown after login is visible for the normal delay by default, then fades out
+- The `Private` tab can independently restore split PM visibility and pause fading while selected
 - Unread notifications only appear after split PMs are fully hidden
 
 ## Scope

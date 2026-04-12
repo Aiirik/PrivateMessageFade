@@ -183,7 +183,7 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 10,
+		position = 11,
 		keyName = "privateTabTextColor",
 		name = "Private tab text",
 		description = "Text color used for the Private chat tab indicator.",
@@ -195,7 +195,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 11,
+		position = 12,
 		keyName = "privateTabClickMarksRead",
 		name = "Private tab marks read",
 		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected.",
@@ -206,10 +206,34 @@ public interface PrivateMessageFadeConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+		position = 13,
+		keyName = "openSplitChatOnPrivateTab",
+		name = "Private tab opens split chat",
+		description = "Switching to the Private tab restores split private chat visibility.",
+		section = privateTabNotificationSection
+	)
+	default boolean openSplitChatOnPrivateTab()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		position = 14,
+		keyName = "keepSplitChatOpenOnPrivateTab",
+		name = "Keep split chat open",
+		description = "While the Private tab is selected, keep split private chat visible and prevent it from fading.",
+		section = privateTabNotificationSection
+	)
+	default boolean keepSplitChatOpenOnPrivateTab()
+	{
+		return false;
+	}
+
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 12,
+		position = 15,
 		keyName = "indicatorBangSize",
 		name = "Private ! size",
 		description = "Font size used for the ! on the Private chat tab indicator.",
@@ -223,7 +247,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 0, max = 50)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 13,
+		position = 16,
 		keyName = "privateTabCountSpacing",
 		name = "Private !# spacing",
 		description = "Number of spaces between ! and count on the Private tab. (0 = no space, 50 = maximum)",
@@ -237,7 +261,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 14,
+		position = 17,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
 		description = "Font size used for the unread count on the Private chat tab indicator.",
@@ -251,7 +275,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 15,
+		position = 18,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab.",
@@ -265,7 +289,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 16,
+		position = 19,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab.",
