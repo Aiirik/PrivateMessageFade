@@ -36,6 +36,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class PrivateMessageFadePlugin extends Plugin
 {
+	private static final int CHAT_VIEW_PRIVATE = 3;
+
 	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
 	{
 		PmChat.PM1 & 0xFFFF,
@@ -176,7 +178,13 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (pendingInitialization)
 		{
 			privateReplyInputOpen = isPrivateReplyInputOpen();
-			privateTabSelected = calculatePrivateTabSelected();
+			final Boolean initialPrivateTabSelected = tryCalculatePrivateTabSelected();
+			if (initialPrivateTabSelected == null)
+			{
+				return;
+			}
+
+			privateTabSelected = initialPrivateTabSelected;
 			initializeActivityState();
 			pendingInitialization = false;
 		}
@@ -263,13 +271,14 @@ public class PrivateMessageFadePlugin extends Plugin
 			return;
 		}
 
-		privateTabSelected = isPrivateTabWidget(widgetId);
-		if (privateTabSelected && config.privateTabClickMarksRead())
+		final boolean clickedPrivateTab = isPrivateTabWidget(widgetId);
+		privateTabSelected = clickedPrivateTab;
+		if (clickedPrivateTab && config.privateTabClickMarksRead())
 		{
 			clearUnreadMessages();
 		}
 
-		if (privateTabSelected && config.openSplitChatOnPrivateTab())
+		if (clickedPrivateTab && config.openSplitChatOnPrivateTab())
 		{
 			resetActivity();
 		}
@@ -458,12 +467,12 @@ public class PrivateMessageFadePlugin extends Plugin
 		return false;
 	}
 
-	private boolean calculatePrivateTabSelected()
+	private Boolean tryCalculatePrivateTabSelected()
 	{
 		final Widget privateTabText = client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1);
 		if (privateTabText == null)
 		{
-			return false;
+			return null;
 		}
 
 		final int privateTextColor = privateTabText.getTextColor();
@@ -479,22 +488,32 @@ public class PrivateMessageFadePlugin extends Plugin
 		for (int tabId : otherTabIds)
 		{
 			final Widget widget = client.getWidget(tabId);
-			if (widget != null && privateTextColor <= widget.getTextColor())
+			if (widget == null)
 			{
-				return false;
+				return null;
+			}
+
+			if (privateTextColor <= widget.getTextColor())
+			{
+				return Boolean.FALSE;
 			}
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 	private boolean isNotificationsSuppressedByPrivateTab()
 	{
-		return config.privateTabClickMarksRead() && privateTabSelected;
+		return config.privateTabClickMarksRead() && isPrivateTabSelected();
 	}
 
 	private boolean shouldKeepSplitChatOpenOnPrivateTab()
 	{
-		return privateTabSelected && config.keepSplitChatOpenOnPrivateTab();
+		return isPrivateTabSelected() && config.keepSplitChatOpenOnPrivateTab();
+	}
+
+	private boolean isPrivateTabSelected()
+	{
+		return privateTabSelected || client.getVarcIntValue(VarClientID.CHAT_VIEW) == CHAT_VIEW_PRIVATE;
 	}
 
 	private boolean isChatTabWidget(int widgetId)
