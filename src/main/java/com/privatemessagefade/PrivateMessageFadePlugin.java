@@ -85,7 +85,6 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean privateReplyInputOpen;
 	private int unreadMessageCount;
 	private boolean pendingInitialization;
-	private boolean privateTabSelected;
 	private int lastAppliedOpacity = -1;
 	private boolean initializeOnNextLoggedIn;
 
@@ -178,13 +177,6 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (pendingInitialization)
 		{
 			privateReplyInputOpen = isPrivateReplyInputOpen();
-			final Boolean initialPrivateTabSelected = tryCalculatePrivateTabSelected();
-			if (initialPrivateTabSelected == null)
-			{
-				return;
-			}
-
-			privateTabSelected = initialPrivateTabSelected;
 			initializeActivityState();
 			pendingInitialization = false;
 		}
@@ -272,7 +264,6 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 
 		final boolean clickedPrivateTab = isPrivateTabWidget(widgetId);
-		privateTabSelected = clickedPrivateTab;
 		if (clickedPrivateTab && config.privateTabClickMarksRead())
 		{
 			clearUnreadMessages();
@@ -467,40 +458,6 @@ public class PrivateMessageFadePlugin extends Plugin
 		return false;
 	}
 
-	private Boolean tryCalculatePrivateTabSelected()
-	{
-		final Widget privateTabText = client.getWidget(InterfaceID.Chatbox.CHAT_PRIVATE_TEXT1);
-		if (privateTabText == null)
-		{
-			return null;
-		}
-
-		final int privateTextColor = privateTabText.getTextColor();
-		final int[] otherTabIds = {
-			InterfaceID.Chatbox.CHAT_ALL_TEXT1,
-			InterfaceID.Chatbox.CHAT_GAME_TEXT1,
-			InterfaceID.Chatbox.CHAT_PUBLIC_TEXT1,
-			InterfaceID.Chatbox.CHAT_FRIENDSCHAT_TEXT1,
-			InterfaceID.Chatbox.CHAT_CLAN_TEXT1,
-			InterfaceID.Chatbox.CHAT_TRADE_TEXT
-		};
-
-		for (int tabId : otherTabIds)
-		{
-			final Widget widget = client.getWidget(tabId);
-			if (widget == null)
-			{
-				return null;
-			}
-
-			if (privateTextColor <= widget.getTextColor())
-			{
-				return Boolean.FALSE;
-			}
-		}
-		return Boolean.TRUE;
-	}
-
 	private boolean isNotificationsSuppressedByPrivateTab()
 	{
 		return config.privateTabClickMarksRead() && isPrivateTabSelected();
@@ -513,7 +470,7 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	private boolean isPrivateTabSelected()
 	{
-		return privateTabSelected || client.getVarcIntValue(VarClientID.CHAT_VIEW) == CHAT_VIEW_PRIVATE;
+		return client.getVarcIntValue(VarClientID.CHAT_VIEW) == CHAT_VIEW_PRIVATE;
 	}
 
 	private boolean isChatTabWidget(int widgetId)
