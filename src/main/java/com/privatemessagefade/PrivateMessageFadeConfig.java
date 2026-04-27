@@ -46,7 +46,7 @@ public interface PrivateMessageFadeConfig extends Config
 		position = 0,
 		keyName = "fadeDelaySeconds",
 		name = "Display Duration",
-		description = "How long (seconds) split private chat stays at full opacity before fading. Set to 0 to disable.",
+		description = "How long (seconds) split private chat stays at full opacity before fading. Set to 0 to start fading immediately.",
 		section = fadeSettings
 	)
 	default int fadeDelaySeconds()

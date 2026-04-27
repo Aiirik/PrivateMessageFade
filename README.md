@@ -41,16 +41,16 @@ This lets users enable either display, both, or neither.
 
 ### Split PM fading
 
-- `Fade delay`
+- `Display Duration`
   Number of seconds to wait after the last PM activity before hiding or fading split PMs
 - `Enable fade effect`
   Fades split PMs out gradually instead of hiding them instantly
-- `Fade duration`
+- `Fade Duration`
   Length of the fade animation in seconds
 - `ESC closes PM window`
   Pressing `Esc` while typing a private message closes that reply input only
 
-Setting `Fade delay` to `0` disables split-PM hiding.
+Setting `Display Duration` to `0` starts fading or hiding split PMs immediately after PM activity.
 
 ### Widget notification
 
