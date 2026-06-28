@@ -19,6 +19,7 @@ By default, Old School RuneScape keeps split private messages visible until some
 - Optional `Private tab opens split chat` behavior to restore split PM visibility when switching to that tab
 - Optional `Keep split chat open` behavior to prevent fading while the `Private` tab is selected
 - Optional `ESC closes PM window` behavior while typing a private reply
+- Optional keybind to open or close split private chat above the chatbox
 
 ## Notification Modes
 
@@ -39,7 +40,7 @@ This lets users enable either display, both, or neither.
 
 ## Configuration
 
-### Split PM fading
+### General settings
 
 - `Display Duration`
   Number of seconds to wait after the last PM activity before hiding or fading split PMs
@@ -49,6 +50,8 @@ This lets users enable either display, both, or neither.
   Length of the fade animation in seconds
 - `ESC closes PM window`
   Pressing `Esc` while typing a private message closes that reply input only
+- `Toggle split chat`
+  Keybind to open or close the split private chat window above the chatbox
 
 Setting `Display Duration` to `0` starts fading or hiding split PMs immediately after PM activity.
 
@@ -92,6 +95,7 @@ Setting `Display Duration` to `0` starts fading or hiding split PMs immediately 
 - Outgoing private messages reset the split-PM inactivity timer
 - Opening the private reply input restores split PM visibility
 - While the private reply input is open, split PMs remain visible
+- The split PM keybind can reopen faded private chat without switching chat tabs, then close it again
 - If split PM text already exists when the plugin becomes active, the plugin can still fade that text without requiring a full RuneLite restart
 - Existing split PM text shown after login is visible for the normal delay by default, then fades out
 - The `Private` tab can independently restore split PM visibility and pause fading while selected

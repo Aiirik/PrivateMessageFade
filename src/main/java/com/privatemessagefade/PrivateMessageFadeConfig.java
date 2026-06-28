@@ -6,6 +6,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Keybind;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
@@ -21,8 +22,8 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigSection(
-		name = "Fade settings",
-		description = "Settings for split private message fading.",
+		name = "General settings",
+		description = "General settings for split private chat behavior.",
 		position = 0
 	)
 	String fadeSettings = "fadeSettings";
@@ -93,6 +94,18 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@ConfigItem(
 		position = 4,
+		keyName = "toggleSplitChatKeybind",
+		name = "Toggle split chat",
+		description = "Keybind to open or close the split private chat window above the chatbox.",
+		section = fadeSettings
+	)
+	default Keybind toggleSplitChatKeybind()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	@ConfigItem(
+		position = 5,
 		keyName = "movableWidgetDisplay",
 		name = "Widget notification",
 		description = "How to show the unread indicator as a RuneLite overlay widget above the chatbox.",
@@ -105,7 +118,7 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 5,
+		position = 6,
 		keyName = "widgetTextColor",
 		name = "Widget text",
 		description = "Text color used for the movable widget indicator.",
@@ -117,7 +130,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 6,
+		position = 7,
 		keyName = "widgetBoldText",
 		name = "Widget bold",
 		description = "Uses a bold version of RuneLite's infobox font for the widget notification.",
@@ -131,7 +144,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 0, max = 64)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 7,
+		position = 8,
 		keyName = "widgetSize",
 		name = "Widget size",
 		description = "Configures the size of widget notifications in pixels. Set to 0 to use RuneLite's infobox size.",
@@ -144,7 +157,7 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 8,
+		position = 9,
 		keyName = "widgetBackgroundColor",
 		name = "Widget background",
 		description = "Background color used for the movable widget indicator. Lower alpha makes it more transparent.",
@@ -158,7 +171,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 0, max = 50)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 9,
+		position = 10,
 		keyName = "widgetCountSpacing",
 		name = "Widget !# spacing",
 		description = "Number of spaces between ! and count. (0 = no space, 50 = maximum)",
@@ -170,7 +183,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 10,
+		position = 11,
 		keyName = "privateTabDisplay",
 		name = "Private tab notification",
 		description = "How to show the unread indicator on the Private chat tab.",
@@ -183,7 +196,7 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-		position = 11,
+		position = 12,
 		keyName = "privateTabTextColor",
 		name = "Private tab text",
 		description = "Text color used for the Private chat tab indicator.",
@@ -195,7 +208,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 12,
+		position = 13,
 		keyName = "privateTabClickMarksRead",
 		name = "Private tab marks read",
 		description = "Switching to the Private tab clears unread notifications and suppresses them while that tab is selected.",
@@ -207,7 +220,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 13,
+		position = 14,
 		keyName = "openSplitChatOnPrivateTab",
 		name = "Private tab opens split chat",
 		description = "Switching to the Private tab restores split private chat visibility.",
@@ -219,7 +232,7 @@ public interface PrivateMessageFadeConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 14,
+		position = 15,
 		keyName = "keepSplitChatOpenOnPrivateTab",
 		name = "Keep split chat open",
 		description = "While the Private tab is selected, keep split private chat visible and prevent it from fading.",
@@ -233,7 +246,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 15,
+		position = 16,
 		keyName = "indicatorBangSize",
 		name = "Private ! size",
 		description = "Font size used for the ! on the Private chat tab indicator.",
@@ -247,7 +260,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 0, max = 50)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 16,
+		position = 17,
 		keyName = "privateTabCountSpacing",
 		name = "Private !# spacing",
 		description = "Number of spaces between ! and count on the Private tab. (0 = no space, 50 = maximum)",
@@ -261,7 +274,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = 8, max = 32)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 17,
+		position = 18,
 		keyName = "indicatorCountSize",
 		name = "Private count size",
 		description = "Font size used for the unread count on the Private chat tab indicator.",
@@ -275,7 +288,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 18,
+		position = 19,
 		keyName = "indicatorOffsetX",
 		name = "Private Offset X",
 		description = "Horizontal offset for the unread indicator on the Private chat tab.",
@@ -289,7 +302,7 @@ public interface PrivateMessageFadeConfig extends Config
 	@Range(min = -200, max = 200)
 	@Units(Units.PIXELS)
 	@ConfigItem(
-		position = 19,
+		position = 20,
 		keyName = "indicatorOffsetY",
 		name = "Private Offset Y",
 		description = "Vertical offset for the unread indicator on the Private chat tab.",

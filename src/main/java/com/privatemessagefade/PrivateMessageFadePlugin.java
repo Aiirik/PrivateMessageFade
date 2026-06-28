@@ -21,6 +21,7 @@ import net.runelite.api.events.VarClientIntChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.vars.InputType;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.input.KeyListener;
@@ -76,6 +77,12 @@ public class PrivateMessageFadePlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
+	private ConfigManager configManager;
+
+	@Inject
+	private ChatMessageManager chatMessageManager;
+
+	@Inject
 	private PrivateMessageFadeOverlay overlay;
 
 	@Inject
@@ -87,6 +94,8 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean pendingInitialization;
 	private int lastAppliedOpacity = -1;
 	private boolean initializeOnNextLoggedIn;
+	private boolean splitChatPinnedOpenByKeybind;
+	private boolean splitChatManuallyHiddenByKeybind;
 
 	private final KeyListener keyListener = new KeyListener()
 	{
@@ -98,6 +107,15 @@ public class PrivateMessageFadePlugin extends Plugin
 		@Override
 		public void keyPressed(KeyEvent e)
 		{
+			if (client.getGameState() == GameState.LOGGED_IN
+				&& !privateReplyInputOpen
+				&& config.toggleSplitChatKeybind().matches(e))
+			{
+				e.consume();
+				clientThread.invoke(PrivateMessageFadePlugin.this::toggleSplitChat);
+				return;
+			}
+
 			if (!config.escClosesPrivateMessage()
 				|| e.getKeyCode() != KeyEvent.VK_ESCAPE
 				|| !privateReplyInputOpen)
@@ -121,9 +139,11 @@ public class PrivateMessageFadePlugin extends Plugin
 		unreadMessageCount = 0;
 		pendingInitialization = true;
 		initializeOnNextLoggedIn = client.getGameState() != GameState.LOGGED_IN;
+		clearKeybindToggleState();
 		overlayManager.add(overlay);
 		overlayManager.add(widgetOverlay);
 		keyManager.registerKeyListener(keyListener);
+		PrivateMessageFadeUpdateNotice.announceIfNeeded(configManager, chatMessageManager);
 	}
 
 	@Override
@@ -135,6 +155,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		unreadMessageCount = 0;
 		pendingInitialization = false;
 		initializeOnNextLoggedIn = false;
+		clearKeybindToggleState();
 		clientThread.invokeLater((Runnable) this::restoreWidget);
 	}
 
@@ -223,6 +244,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (currentGameState == GameState.LOGGED_IN && initializeOnNextLoggedIn)
 		{
 			clearUnreadMessages();
+			clearKeybindToggleState();
 			pendingInitialization = true;
 			initializeOnNextLoggedIn = false;
 		}
@@ -271,12 +293,14 @@ public class PrivateMessageFadePlugin extends Plugin
 
 		if (clickedPrivateTab && config.openSplitChatOnPrivateTab())
 		{
+			clearKeybindToggleState();
 			resetActivity();
 		}
 	}
 
 	private void resetActivity()
 	{
+		clearKeybindToggleState();
 		lastActivityMillis = System.currentTimeMillis();
 		restoreWidget();
 	}
@@ -336,6 +360,20 @@ public class PrivateMessageFadePlugin extends Plugin
 			return;
 		}
 
+		if (splitChatManuallyHiddenByKeybind)
+		{
+			applyOpacityIfChanged(privateChatWidget, 255);
+			privateChatWidget.setHidden(true);
+			return;
+		}
+
+		if (splitChatPinnedOpenByKeybind)
+		{
+			applyOpacityIfChanged(privateChatWidget, 0);
+			privateChatWidget.setHidden(false);
+			return;
+		}
+
 		final int fadeDelaySeconds = config.fadeDelaySeconds();
 		if (fadeDelaySeconds <= 0)
 		{
@@ -375,6 +413,35 @@ public class PrivateMessageFadePlugin extends Plugin
 		final float clampedAlpha = Math.max(0.0f, Math.min(1.0f, alphaProgress));
 		final int opacity = Math.round(clampedAlpha * 255f);
 		applyOpacityIfChanged(privateChatWidget, opacity);
+	}
+
+	private void toggleSplitChat()
+	{
+		if (client.getGameState() != GameState.LOGGED_IN || privateReplyInputOpen)
+		{
+			return;
+		}
+
+		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
+		if (privateChatWidget == null)
+		{
+			return;
+		}
+
+		if (isSplitChatVisible(privateChatWidget))
+		{
+			splitChatPinnedOpenByKeybind = false;
+			splitChatManuallyHiddenByKeybind = true;
+			applyOpacityIfChanged(privateChatWidget, 255);
+			privateChatWidget.setHidden(true);
+			return;
+		}
+
+		splitChatPinnedOpenByKeybind = true;
+		splitChatManuallyHiddenByKeybind = false;
+		clearUnreadMessages();
+		restoreWidget(privateChatWidget);
+		lastAppliedOpacity = 0;
 	}
 
 	private void applyOpacityIfChanged(Widget widget, int opacity)
@@ -426,6 +493,11 @@ public class PrivateMessageFadePlugin extends Plugin
 	{
 		privateChatWidget.setHidden(false);
 		applyOpacityToWidgetTree(privateChatWidget, 0);
+	}
+
+	private boolean isSplitChatVisible(Widget privateChatWidget)
+	{
+		return splitChatPinnedOpenByKeybind || !privateChatWidget.isHidden();
 	}
 
 	private boolean isPrivateReplyInputOpen()
@@ -486,6 +558,12 @@ public class PrivateMessageFadePlugin extends Plugin
 	private void clearUnreadMessages()
 	{
 		unreadMessageCount = 0;
+	}
+
+	private void clearKeybindToggleState()
+	{
+		splitChatPinnedOpenByKeybind = false;
+		splitChatManuallyHiddenByKeybind = false;
 	}
 
 	private static boolean shouldInitializeOnFutureLoggedIn(GameState gameState)
