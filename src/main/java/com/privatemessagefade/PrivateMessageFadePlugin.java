@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -363,7 +364,8 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (splitChatManuallyHiddenByKeybind)
 		{
 			applyOpacityIfChanged(privateChatWidget, 255);
-			privateChatWidget.setHidden(true);
+			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, true);
 			return;
 		}
 
@@ -371,6 +373,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			applyOpacityIfChanged(privateChatWidget, 0);
 			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, false);
 			return;
 		}
 
@@ -378,7 +381,8 @@ public class PrivateMessageFadePlugin extends Plugin
 		if (fadeDelaySeconds <= 0)
 		{
 			applyOpacityIfChanged(privateChatWidget, 0);
-			privateChatWidget.setHidden(true);
+			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, true);
 			return;
 		}
 
@@ -388,24 +392,27 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			applyOpacityIfChanged(privateChatWidget, 0);
 			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, false);
 			return;
 		}
 
 		if (!config.enableFadeEffect())
 		{
 			applyOpacityIfChanged(privateChatWidget, 255);
-			privateChatWidget.setHidden(true);
+			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, true);
 			return;
 		}
 
 		privateChatWidget.setHidden(false);
+		setPrivateMessageWidgetsHidden(privateChatWidget, false);
 
 		final long fadeDurationMillis = Math.max(1L, config.fadeDurationSeconds() * 1000L);
 		final long fadeElapsedMillis = now - hideAtMillis;
 		if (fadeElapsedMillis >= fadeDurationMillis)
 		{
 			applyOpacityIfChanged(privateChatWidget, 255);
-			privateChatWidget.setHidden(true);
+			setPrivateMessageWidgetsHidden(privateChatWidget, true);
 			return;
 		}
 
@@ -433,7 +440,8 @@ public class PrivateMessageFadePlugin extends Plugin
 			splitChatPinnedOpenByKeybind = false;
 			splitChatManuallyHiddenByKeybind = true;
 			applyOpacityIfChanged(privateChatWidget, 255);
-			privateChatWidget.setHidden(true);
+			privateChatWidget.setHidden(false);
+			setPrivateMessageWidgetsHidden(privateChatWidget, true);
 			return;
 		}
 
@@ -448,7 +456,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	{
 		if (opacity != lastAppliedOpacity)
 		{
-			applyOpacityToWidgetTree(widget, opacity);
+			applyOpacityToPrivateMessageWidgets(widget, opacity);
 			lastAppliedOpacity = opacity;
 		}
 	}
@@ -492,12 +500,13 @@ public class PrivateMessageFadePlugin extends Plugin
 	private static void restoreWidget(Widget privateChatWidget)
 	{
 		privateChatWidget.setHidden(false);
-		applyOpacityToWidgetTree(privateChatWidget, 0);
+		setPrivateMessageWidgetsHidden(privateChatWidget, false);
+		applyOpacityToPrivateMessageWidgets(privateChatWidget, 0);
 	}
 
 	private boolean isSplitChatVisible(Widget privateChatWidget)
 	{
-		return splitChatPinnedOpenByKeybind || !privateChatWidget.isHidden();
+		return splitChatPinnedOpenByKeybind || hasVisiblePrivateMessageWidget(privateChatWidget);
 	}
 
 	private boolean isPrivateReplyInputOpen()
@@ -578,23 +587,7 @@ public class PrivateMessageFadePlugin extends Plugin
 	private static void applyOpacityToWidgetTree(Widget widget, int opacity)
 	{
 		widget.setOpacity(opacity);
-		applyOpacityRecursively(widget.getChildren(), opacity);
-	}
-
-	private static void applyOpacityRecursively(Widget[] widgets, int opacity)
-	{
-		if (widgets == null)
-		{
-			return;
-		}
-
-		for (Widget widget : widgets)
-		{
-			if (widget != null)
-			{
-				applyOpacityToWidgetTree(widget, opacity);
-			}
-		}
+		forEachChild(widget, child -> applyOpacityToWidgetTree(child, opacity));
 	}
 
 	private static boolean isPrivateMessage(ChatMessageType messageType)
@@ -605,6 +598,116 @@ public class PrivateMessageFadePlugin extends Plugin
 	private static boolean isIncomingPrivateMessage(ChatMessageType messageType)
 	{
 		return messageType == ChatMessageType.PRIVATECHAT || messageType == ChatMessageType.MODPRIVATECHAT;
+	}
+
+	private static void setPrivateMessageWidgetsHidden(Widget privateChatWidget, boolean hidden)
+	{
+		forEachChild(privateChatWidget, widget -> setWidgetTreeHidden(widget, hidden));
+	}
+
+	private static boolean hasVisiblePrivateMessageWidget(Widget privateChatWidget)
+	{
+		final boolean[] visible = new boolean[1];
+		forEachChild(privateChatWidget, widget ->
+		{
+			if (widget != null && hasVisibleNonCountdownWidget(widget))
+			{
+				visible[0] = true;
+			}
+		});
+
+		return visible[0];
+	}
+
+	private static void applyOpacityToPrivateMessageWidgets(Widget privateChatWidget, int opacity)
+	{
+		forEachChild(privateChatWidget, widget -> applyOpacityToWidgetTreeExceptCountdown(widget, opacity));
+	}
+
+	private static void setWidgetTreeHidden(Widget widget, boolean hidden)
+	{
+		widget.setHidden(hidden && !subtreeContainsSystemCountdown(widget));
+		forEachChild(widget, child -> setWidgetTreeHidden(child, hidden));
+	}
+
+	private static boolean hasVisibleNonCountdownWidget(Widget widget)
+	{
+		if (!widget.isHidden() && !isSystemCountdownWidget(widget) && !subtreeContainsSystemCountdown(widget))
+		{
+			return true;
+		}
+
+		final boolean[] visible = new boolean[1];
+		forEachChild(widget, child ->
+		{
+			if (child != null && hasVisibleNonCountdownWidget(child))
+			{
+				visible[0] = true;
+			}
+		});
+
+		return visible[0];
+	}
+
+	private static void applyOpacityToWidgetTreeExceptCountdown(Widget widget, int opacity)
+	{
+		widget.setOpacity(subtreeContainsSystemCountdown(widget) ? 0 : opacity);
+		forEachChild(widget, child -> applyOpacityToWidgetTreeExceptCountdown(child, opacity));
+	}
+
+	private static boolean subtreeContainsSystemCountdown(Widget widget)
+	{
+		if (isSystemCountdownWidget(widget))
+		{
+			return true;
+		}
+
+		final boolean[] contains = new boolean[1];
+		forEachChild(widget, child ->
+		{
+			if (child != null && subtreeContainsSystemCountdown(child))
+			{
+				contains[0] = true;
+			}
+		});
+
+		return contains[0];
+	}
+
+	private static boolean isSystemCountdownWidget(Widget widget)
+	{
+		final String text = widget.getText();
+		if (text == null)
+		{
+			return false;
+		}
+
+		final String normalizedText = text.toLowerCase();
+		return normalizedText.contains("system update in")
+			|| normalizedText.contains("game update in");
+	}
+
+	private static void forEachChild(Widget widget, Consumer<Widget> consumer)
+	{
+		forEachWidget(widget.getDynamicChildren(), consumer);
+		forEachWidget(widget.getStaticChildren(), consumer);
+		forEachWidget(widget.getNestedChildren(), consumer);
+	}
+
+	private static void forEachWidget(Widget[] widgets, Consumer<Widget> consumer)
+	{
+		if (widgets == null)
+		{
+			return;
+		}
+
+		for (Widget widget : widgets)
+		{
+			if (widget != null)
+			{
+				consumer.accept(widget);
+			}
+		}
 	}
 
 	@Provides
