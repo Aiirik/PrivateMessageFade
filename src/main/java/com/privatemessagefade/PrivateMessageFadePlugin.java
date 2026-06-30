@@ -110,7 +110,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			if (client.getGameState() == GameState.LOGGED_IN
 				&& !privateReplyInputOpen
-				&& !isTextInputActive()
+				&& !shouldIgnoreHotkeys()
 				&& config.toggleSplitChatKeybind().matches(e))
 			{
 				e.consume();
@@ -515,11 +515,12 @@ public class PrivateMessageFadePlugin extends Plugin
 		return client.getVarcIntValue(VarClientID.MESLAYERMODE) == InputType.PRIVATE_MESSAGE.getType();
 	}
 
-	private boolean isTextInputActive()
+	private boolean shouldIgnoreHotkeys()
 	{
 		final int inputType = client.getVarcIntValue(VarClientID.MESLAYERMODE);
 		final String chatInput = client.getVarcStrValue(VarClientID.CHATINPUT);
 		return inputType != InputType.NONE.getType()
+			|| client.getVarcIntValue(VarClientID.WORLDMAP_SEARCHING) != 0
 			|| client.getFocusedInputFieldWidget() != null
 			|| (chatInput != null && !chatInput.isEmpty())
 			|| isPublicChatInputOpen();

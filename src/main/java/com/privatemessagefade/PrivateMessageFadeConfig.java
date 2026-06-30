@@ -1,6 +1,8 @@
 package com.privatemessagefade;
 
 import java.awt.Color;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
@@ -101,7 +103,7 @@ public interface PrivateMessageFadeConfig extends Config
 	)
 	default Keybind toggleSplitChatKeybind()
 	{
-		return Keybind.NOT_SET;
+		return new Keybind(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
 	}
 
 	@ConfigItem(

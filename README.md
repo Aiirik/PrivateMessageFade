@@ -51,7 +51,7 @@ This lets users enable either display, both, or neither.
 - `ESC closes PM window`
   Pressing `Esc` while typing a private message closes that reply input only
 - `Toggle split chat`
-  Keybind to open or close the split private chat window above the chatbox
+  Keybind to open or close the split private chat window above the chatbox. Defaults to `Ctrl+V`
 
 Setting `Display Duration` to `0` starts fading or hiding split PMs immediately after PM activity.
 
