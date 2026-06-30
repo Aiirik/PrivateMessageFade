@@ -77,12 +77,12 @@ public class PrivateMessageFadeOverlay extends Overlay
 		{
 			graphics.setFont(countFont);
 			final FontMetrics countMetrics = graphics.getFontMetrics();
-			
+
 			// Build spacing dynamically based on config
 			final String spacing = " ".repeat(config.privateTabCountSpacing());
 			final String unreadCount = String.valueOf(plugin.getUnreadCount());
 			final String fullText = spacing + unreadCount;
-			
+
 			final int countX = x + 2;
 			textComponent.setPosition(new Point(countX, baselineY));
 			textComponent.setColor(config.privateTabTextColor());

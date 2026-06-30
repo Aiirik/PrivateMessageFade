@@ -110,6 +110,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		{
 			if (client.getGameState() == GameState.LOGGED_IN
 				&& !privateReplyInputOpen
+				&& !isTextInputActive()
 				&& config.toggleSplitChatKeybind().matches(e))
 			{
 				e.consume();
@@ -512,6 +513,28 @@ public class PrivateMessageFadePlugin extends Plugin
 	private boolean isPrivateReplyInputOpen()
 	{
 		return client.getVarcIntValue(VarClientID.MESLAYERMODE) == InputType.PRIVATE_MESSAGE.getType();
+	}
+
+	private boolean isTextInputActive()
+	{
+		final int inputType = client.getVarcIntValue(VarClientID.MESLAYERMODE);
+		final String chatInput = client.getVarcStrValue(VarClientID.CHATINPUT);
+		return inputType != InputType.NONE.getType()
+			|| client.getFocusedInputFieldWidget() != null
+			|| (chatInput != null && !chatInput.isEmpty())
+			|| isPublicChatInputOpen();
+	}
+
+	private boolean isPublicChatInputOpen()
+	{
+		final Widget chatInputWidget = client.getWidget(InterfaceID.Chatbox.INPUT);
+		if (chatInputWidget == null)
+		{
+			return false;
+		}
+
+		final String text = chatInputWidget.getText();
+		return text != null && text.contains("*");
 	}
 
 	private boolean hasExistingPrivateMessages()

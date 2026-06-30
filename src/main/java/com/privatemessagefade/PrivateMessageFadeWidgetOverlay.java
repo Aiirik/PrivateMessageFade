@@ -57,7 +57,7 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 		}
 
 		final int currentUnreadCount = plugin.getUnreadCount();
-		
+
 		// Track when unread count first appears or changes - always fade in
 		if (currentUnreadCount != previousUnreadCount)
 		{
@@ -113,14 +113,14 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 			{
 				graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 			}
-			
+
 			final Dimension result = super.render(graphics);
-			
+
 			if (opacity < 1.0f)
 			{
 				graphics.setComposite(originalComposite);
 			}
-			
+
 			return result;
 		}
 		finally
@@ -135,7 +135,7 @@ public class PrivateMessageFadeWidgetOverlay extends OverlayPanel
 		final boolean boldText = config.widgetBoldText();
 		final int style = boldText ? Font.BOLD : Font.PLAIN;
 		final float baseFontSize = baseFont.getSize2D();
-		
+
 		if (widgetFont == null
 			|| cachedBoxSize != boxSize
 			|| cachedBoldText != boldText
