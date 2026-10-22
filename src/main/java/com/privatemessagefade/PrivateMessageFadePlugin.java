@@ -498,7 +498,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 	}
 
-	private static void restoreWidget(Widget privateChatWidget)
+	private void restoreWidget(Widget privateChatWidget)
 	{
 		privateChatWidget.setHidden(false);
 		setPrivateMessageWidgetsHidden(privateChatWidget, false);
@@ -624,17 +624,17 @@ public class PrivateMessageFadePlugin extends Plugin
 		return messageType == ChatMessageType.PRIVATECHAT || messageType == ChatMessageType.MODPRIVATECHAT;
 	}
 
-	private static void setPrivateMessageWidgetsHidden(Widget privateChatWidget, boolean hidden)
+	private void setPrivateMessageWidgetsHidden(Widget privateChatWidget, boolean hidden)
 	{
-		forEachChild(privateChatWidget, widget -> setWidgetTreeHidden(widget, hidden));
+		forEachPrivateMessageWidget(widget -> setPrivateMessageWidgetHidden(widget, hidden));
 	}
 
-	private static boolean hasVisiblePrivateMessageWidget(Widget privateChatWidget)
+	private boolean hasVisiblePrivateMessageWidget(Widget privateChatWidget)
 	{
 		final boolean[] visible = new boolean[1];
-		forEachChild(privateChatWidget, widget ->
+		forEachPrivateMessageWidget(widget ->
 		{
-			if (widget != null && hasVisibleNonCountdownWidget(widget))
+			if (hasVisibleFadableWidget(widget))
 			{
 				visible[0] = true;
 			}
@@ -643,20 +643,20 @@ public class PrivateMessageFadePlugin extends Plugin
 		return visible[0];
 	}
 
-	private static void applyOpacityToPrivateMessageWidgets(Widget privateChatWidget, int opacity)
+	private void applyOpacityToPrivateMessageWidgets(Widget privateChatWidget, int opacity)
 	{
-		forEachChild(privateChatWidget, widget -> applyOpacityToWidgetTreeExceptCountdown(widget, opacity));
+		forEachPrivateMessageWidget(widget -> applyOpacityToPrivateMessageWidget(widget, opacity));
 	}
 
-	private static void setWidgetTreeHidden(Widget widget, boolean hidden)
+	private static void setPrivateMessageWidgetHidden(Widget widget, boolean hidden)
 	{
-		widget.setHidden(hidden && !subtreeContainsSystemCountdown(widget));
-		forEachChild(widget, child -> setWidgetTreeHidden(child, hidden));
+		widget.setHidden(hidden && !subtreeContainsPersistentNotice(widget));
+		forEachChild(widget, child -> setPrivateMessageWidgetHidden(child, hidden));
 	}
 
-	private static boolean hasVisibleNonCountdownWidget(Widget widget)
+	private static boolean hasVisibleFadableWidget(Widget widget)
 	{
-		if (!widget.isHidden() && !isSystemCountdownWidget(widget) && !subtreeContainsSystemCountdown(widget))
+		if (!widget.isHidden() && !subtreeContainsPersistentNotice(widget))
 		{
 			return true;
 		}
@@ -664,7 +664,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		final boolean[] visible = new boolean[1];
 		forEachChild(widget, child ->
 		{
-			if (child != null && hasVisibleNonCountdownWidget(child))
+			if (child != null && hasVisibleFadableWidget(child))
 			{
 				visible[0] = true;
 			}
@@ -673,15 +673,15 @@ public class PrivateMessageFadePlugin extends Plugin
 		return visible[0];
 	}
 
-	private static void applyOpacityToWidgetTreeExceptCountdown(Widget widget, int opacity)
+	private static void applyOpacityToPrivateMessageWidget(Widget widget, int opacity)
 	{
-		widget.setOpacity(subtreeContainsSystemCountdown(widget) ? 0 : opacity);
-		forEachChild(widget, child -> applyOpacityToWidgetTreeExceptCountdown(child, opacity));
+		widget.setOpacity(subtreeContainsPersistentNotice(widget) ? 0 : opacity);
+		forEachChild(widget, child -> applyOpacityToPrivateMessageWidget(child, opacity));
 	}
 
-	private static boolean subtreeContainsSystemCountdown(Widget widget)
+	private static boolean subtreeContainsPersistentNotice(Widget widget)
 	{
-		if (isSystemCountdownWidget(widget))
+		if (isPersistentNotice(widget))
 		{
 			return true;
 		}
@@ -689,7 +689,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		final boolean[] contains = new boolean[1];
 		forEachChild(widget, child ->
 		{
-			if (child != null && subtreeContainsSystemCountdown(child))
+			if (subtreeContainsPersistentNotice(child))
 			{
 				contains[0] = true;
 			}
@@ -698,7 +698,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		return contains[0];
 	}
 
-	private static boolean isSystemCountdownWidget(Widget widget)
+	private static boolean isPersistentNotice(Widget widget)
 	{
 		final String text = widget.getText();
 		if (text == null)
@@ -707,8 +707,22 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 
 		final String normalizedText = text.toLowerCase();
-		return normalizedText.contains("system update in")
+		return normalizedText.contains(" has logged in")
+			|| normalizedText.contains(" has logged out")
+			|| normalizedText.contains("system update in")
 			|| normalizedText.contains("game update in");
+	}
+
+	private void forEachPrivateMessageWidget(Consumer<Widget> consumer)
+	{
+		for (int childId : PRIVATE_MESSAGE_CHILD_IDS)
+		{
+			final Widget widget = client.getWidget(InterfaceID.PM_CHAT, childId);
+			if (widget != null)
+			{
+				consumer.accept(widget);
+			}
+		}
 	}
 
 	private static void forEachChild(Widget widget, Consumer<Widget> consumer)
