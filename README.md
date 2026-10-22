@@ -6,9 +6,10 @@ By default, Old School RuneScape keeps split private messages visible until some
 
 ## Features
 
-- Hides split private chat after a configurable period with no PM activity
+- Hides split private chat after a configurable period with no PM or friend login/logout activity
 - Supports either instant hide or gradual fade-out
-- Resets visibility when private messages are received or sent
+- Resets visibility when private messages are received or sent, or when a friend logs in or out
+- Optional unread `!` alerts for friend login/logout notices
 - Keeps split PMs visible while the private reply input is open
 - Handles existing split PM text when the plugin is enabled mid-session
 - Optional unread-message notifications after split PMs have faded away
@@ -52,6 +53,8 @@ This lets users enable either display, both, or neither.
   Pressing `Esc` while typing a private message closes that reply input only
 - `Toggle split chat`
   Keybind to open or close the split private chat window above the chatbox. Defaults to `Ctrl+V`
+- `Login/logout unread alert`
+  Adds friend login/logout notices to unread `!` indicators when enabled. Off by default; notices still reveal split chat and reset its fade timer
 
 Setting `Display Duration` to `0` starts fading or hiding split PMs immediately after PM activity.
 
@@ -91,7 +94,7 @@ Setting `Display Duration` to `0` starts fading or hiding split PMs immediately 
 
 ## Behavior
 
-- Incoming private messages reset the split-PM inactivity timer
+- Incoming private messages and friend login/logout notices reset the split-chat inactivity timer
 - Outgoing private messages reset the split-PM inactivity timer
 - Opening the private reply input restores split PM visibility
 - While the private reply input is open, split PMs remain visible

@@ -108,6 +108,18 @@ public interface PrivateMessageFadeConfig extends Config
 
 	@ConfigItem(
 		position = 5,
+		keyName = "loginLogoutUnreadAlert",
+		name = "Login/logout unread alert",
+		description = "Include friend login/logout notices in the unread ! indicators. Notices still appear in split chat when disabled.",
+		section = fadeSettings
+	)
+	default boolean loginLogoutUnreadAlert()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 5,
 		keyName = "movableWidgetDisplay",
 		name = "Widget notification",
 		description = "How to show the unread indicator as a RuneLite overlay widget above the chatbox.",

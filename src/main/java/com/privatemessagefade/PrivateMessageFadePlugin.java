@@ -11,7 +11,6 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.ScriptID;
 import net.runelite.api.gameval.InterfaceID;
-import net.runelite.api.gameval.InterfaceID.PmChat;
 import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ChatMessage;
@@ -39,15 +38,6 @@ import net.runelite.client.ui.overlay.OverlayManager;
 public class PrivateMessageFadePlugin extends Plugin
 {
 	private static final int CHAT_VIEW_PRIVATE = 3;
-
-	private static final int[] PRIVATE_MESSAGE_CHILD_IDS =
-	{
-		PmChat.PM1 & 0xFFFF,
-		PmChat.PM2 & 0xFFFF,
-		PmChat.PM3 & 0xFFFF,
-		PmChat.PM4 & 0xFFFF,
-		PmChat.PM5 & 0xFFFF
-	};
 
 	private static final Set<ChatMessageType> PRIVATE_MESSAGE_TYPES = EnumSet.of(
 		ChatMessageType.PRIVATECHAT,
@@ -165,6 +155,18 @@ public class PrivateMessageFadePlugin extends Plugin
 	public void onChatMessage(ChatMessage chatMessage)
 	{
 		final ChatMessageType messageType = chatMessage.getType();
+		if (messageType == ChatMessageType.LOGINLOGOUTNOTIFICATION)
+		{
+			if (config.loginLogoutUnreadAlert()
+				&& !isNotificationsSuppressedByPrivateTab()
+				&& !privateReplyInputOpen)
+			{
+				unreadMessageCount++;
+			}
+			resetActivity();
+			return;
+		}
+
 		if (!isPrivateMessage(messageType))
 		{
 			return;
@@ -545,22 +547,8 @@ public class PrivateMessageFadePlugin extends Plugin
 			return false;
 		}
 
-		for (int childId : PRIVATE_MESSAGE_CHILD_IDS)
-		{
-			final Widget widget = client.getWidget(InterfaceID.PM_CHAT, childId);
-			if (widget == null || widget.isHidden())
-			{
-				continue;
-			}
-
-			final String text = widget.getText();
-			if (text != null && !text.isBlank())
-			{
-				return true;
-			}
-		}
-
-		return false;
+		final Widget privateChatWidget = client.getWidget(InterfaceID.PM_CHAT, 0);
+		return privateChatWidget != null && hasVisiblePrivateMessageWidget(privateChatWidget);
 	}
 
 	private boolean isNotificationsSuppressedByPrivateTab()
@@ -624,15 +612,15 @@ public class PrivateMessageFadePlugin extends Plugin
 		return messageType == ChatMessageType.PRIVATECHAT || messageType == ChatMessageType.MODPRIVATECHAT;
 	}
 
-	private void setPrivateMessageWidgetsHidden(Widget privateChatWidget, boolean hidden)
+	static void setPrivateMessageWidgetsHidden(Widget privateChatWidget, boolean hidden)
 	{
-		forEachPrivateMessageWidget(widget -> setPrivateMessageWidgetHidden(widget, hidden));
+		forEachChild(privateChatWidget, widget -> setPrivateMessageWidgetHidden(widget, hidden));
 	}
 
-	private boolean hasVisiblePrivateMessageWidget(Widget privateChatWidget)
+	static boolean hasVisiblePrivateMessageWidget(Widget privateChatWidget)
 	{
 		final boolean[] visible = new boolean[1];
-		forEachPrivateMessageWidget(widget ->
+		forEachChild(privateChatWidget, widget ->
 		{
 			if (hasVisibleFadableWidget(widget))
 			{
@@ -643,20 +631,20 @@ public class PrivateMessageFadePlugin extends Plugin
 		return visible[0];
 	}
 
-	private void applyOpacityToPrivateMessageWidgets(Widget privateChatWidget, int opacity)
+	static void applyOpacityToPrivateMessageWidgets(Widget privateChatWidget, int opacity)
 	{
-		forEachPrivateMessageWidget(widget -> applyOpacityToPrivateMessageWidget(widget, opacity));
+		forEachChild(privateChatWidget, widget -> applyOpacityToPrivateMessageWidget(widget, opacity));
 	}
 
 	private static void setPrivateMessageWidgetHidden(Widget widget, boolean hidden)
 	{
-		widget.setHidden(hidden && !subtreeContainsPersistentNotice(widget));
+		widget.setHidden(hidden && !subtreeContainsSystemCountdown(widget));
 		forEachChild(widget, child -> setPrivateMessageWidgetHidden(child, hidden));
 	}
 
 	private static boolean hasVisibleFadableWidget(Widget widget)
 	{
-		if (!widget.isHidden() && !subtreeContainsPersistentNotice(widget))
+		if (!widget.isHidden() && !subtreeContainsSystemCountdown(widget))
 		{
 			return true;
 		}
@@ -675,13 +663,13 @@ public class PrivateMessageFadePlugin extends Plugin
 
 	private static void applyOpacityToPrivateMessageWidget(Widget widget, int opacity)
 	{
-		widget.setOpacity(subtreeContainsPersistentNotice(widget) ? 0 : opacity);
+		widget.setOpacity(subtreeContainsSystemCountdown(widget) ? 0 : opacity);
 		forEachChild(widget, child -> applyOpacityToPrivateMessageWidget(child, opacity));
 	}
 
-	private static boolean subtreeContainsPersistentNotice(Widget widget)
+	private static boolean subtreeContainsSystemCountdown(Widget widget)
 	{
-		if (isPersistentNotice(widget))
+		if (isSystemCountdownWidget(widget))
 		{
 			return true;
 		}
@@ -689,7 +677,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		final boolean[] contains = new boolean[1];
 		forEachChild(widget, child ->
 		{
-			if (subtreeContainsPersistentNotice(child))
+			if (subtreeContainsSystemCountdown(child))
 			{
 				contains[0] = true;
 			}
@@ -698,7 +686,7 @@ public class PrivateMessageFadePlugin extends Plugin
 		return contains[0];
 	}
 
-	private static boolean isPersistentNotice(Widget widget)
+	private static boolean isSystemCountdownWidget(Widget widget)
 	{
 		final String text = widget.getText();
 		if (text == null)
@@ -707,22 +695,8 @@ public class PrivateMessageFadePlugin extends Plugin
 		}
 
 		final String normalizedText = text.toLowerCase();
-		return normalizedText.contains(" has logged in")
-			|| normalizedText.contains(" has logged out")
-			|| normalizedText.contains("system update in")
+		return normalizedText.contains("system update in")
 			|| normalizedText.contains("game update in");
-	}
-
-	private void forEachPrivateMessageWidget(Consumer<Widget> consumer)
-	{
-		for (int childId : PRIVATE_MESSAGE_CHILD_IDS)
-		{
-			final Widget widget = client.getWidget(InterfaceID.PM_CHAT, childId);
-			if (widget != null)
-			{
-				consumer.accept(widget);
-			}
-		}
 	}
 
 	private static void forEachChild(Widget widget, Consumer<Widget> consumer)

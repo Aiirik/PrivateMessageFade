@@ -9,8 +9,8 @@ import net.runelite.client.util.ColorUtil;
 
 final class PrivateMessageFadeUpdateNotice
 {
-	static final String NOTICE_ID = "1.1.3";
-	static final String MESSAGE = "Private Message Fade plugin has updated. See the plugin config for new settings.";
+	static final String NOTICE_ID = "1.2.0";
+	static final String MESSAGE = "Private Message Fade 1.2.0: friend login/logout notices now reset the fade timer. An optional unread alert is available in the plugin config.";
 
 	private static final Color NOTICE_COLOR = new Color(160, 45, 45);
 	private static final String CONFIG_GROUP = "privatemessagefade";
